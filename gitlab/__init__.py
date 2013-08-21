@@ -16,18 +16,20 @@ class Gitlab(object):
             self.token = token
             self.headers = {"PRIVATE-TOKEN": self.token}
         self.host = host
-        self.projects_url = "http://" + self.host + "/api/v3/projects"
-        self.users_url = "http://" + self.host + "/api/v3/users"
-        self.keys_url = "http://" + self.host + "/api/v3/user/keys"
+        self.projects_url = self.host + "/api/v3/projects"
+        self.users_url = self.host + "/api/v3/users"
+        self.keys_url = self.host + "/api/v3/user/keys"
+        self.groups_url = self.host + "/api/v3/groups"
 
     def login(self, email, password):
         data = {"email": email, "password": password}
-        r = requests.post("http://" + self.host + "/api/v3/session", data=data)
+        r = requests.post(self.host + "/api/v3/session", data=data)
         if r.status_code == 201:
             self.token = json.loads(r.content)['private_token']
             self.headers = {"PRIVATE-TOKEN": self.token}
             return True
         else:
+            print r
             return False
 
     def getUsers(self, id_=0):
@@ -37,7 +39,7 @@ class Gitlab(object):
         return: returs a dictionary of the users, false if there is an error
         """
         if id_ != 0:
-            r = requests.get("http://" + self.host + "/api/v3/users/" + str(id_), headers=self.headers)
+            r = requests.get(self.host + "/api/v3/users/" + str(id_), headers=self.headers)
             user = json.loads(r.content)
             return [user['id'], user['username'], user['name'], user['email'], user['state'], user['created_at']]
         else:
@@ -64,6 +66,7 @@ class Gitlab(object):
         if r.status_code == 201:
             return True
         elif r.status_code == 404:
+            print r
             return False
 
     def deleteUser(self, id_):
@@ -77,6 +80,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return True
         else:
+            print r
             return False
 
     def currentUser(self):
@@ -84,7 +88,7 @@ class Gitlab(object):
         Returns the current user parameters. The current user is linked to the secret token
         :return: a list with the current user properties
         """
-        r = requests.get("http://" + self.host + "/api/v3/user", headers=self.headers)
+        r = requests.get(self.host + "/api/v3/user", headers=self.headers)
         return json.loads(r.content)
 
     def editUser(self, id_, name="", username="", password="", email="", skype="", linkedin="", twitter="",
@@ -116,19 +120,20 @@ class Gitlab(object):
         if r.status_code == 404:
             return True
         # There is a problem here and that is that the api always return 404,
-        #  doesn't matter what heappened with the request, so now ay of knowing what happened
+        #  doesn't matter what heappened with the request, so now way of knowing what happened
         else:
             return False
 
     def getSshKeys(self):
         """
-        Gets all the ssh jeys for the current user
+        Gets all the ssh keys for the current user
         :return: a dictionary with the lists
         """
         r = requests.get(self.keys_url, headers=self.headers)
         if r.status_code == 200:
             return json.loads(r.content)
         else:
+            print r
             return False
 
     def getSshKey(self, id_):
@@ -141,6 +146,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return json.loads(r.content)
         else:
+            print r
             return False
 
     def addSshKey(self, title, key):
@@ -155,6 +161,7 @@ class Gitlab(object):
         if r.status_code == 201:
             return True
         else:
+            print r
             return False
 
     def addSshKeyUser(self, id_, title, key):
@@ -170,6 +177,7 @@ class Gitlab(object):
         if r.status_code == 201:
             return True
         else:
+            print r
             return False
 
     def deleteSshKey(self, id_):
@@ -180,6 +188,7 @@ class Gitlab(object):
         """
         r = requests.delete(self.keys_url + "/" + str(id_), headers=self.headers)
         if r.content == "null":  # always answer 200 so we need to examine the content
+            print r
             return False
         else:
             return True
@@ -187,12 +196,13 @@ class Gitlab(object):
     def getProjects(self):
         """
         Returns a dictionary of all the projects
-        :return: list with the repo name, description, last actitvity, web url, ssh url, owner and if its public
+        :return: list with the repo name, description, last activity, web url, ssh url, owner and if its public
         """
         r = requests.get(self.projects_url, headers=self.headers)
         if r.status_code == 200:
             return json.loads(r.content)
         else:
+            print r
             return False
 
     def getProject(self, id_):
@@ -205,6 +215,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return json.loads(r.content)
         else:
+            print r
             return False
 
     def getProjectEvents(self, id_):
@@ -217,6 +228,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return json.loads(r.content)
         else:
+            print r
             return False
 
     def createProject(self, name, description="", default_branch="", issues_enabled="", wall_enabled="",
@@ -224,7 +236,7 @@ class Gitlab(object):
         """
         Create a project
         :param name: Obligatory
-        :return: True if it created the project, False otherwise
+        :return: Dict of information on the newly created project if successful, False otherwise
         """
         data = {"name": name, "description": description, "default_branch": default_branch,
                 "issues_enabled": issues_enabled, "wall_enabled": wall_enabled,
@@ -232,8 +244,9 @@ class Gitlab(object):
                 "snippets_enabled": snippets_enabled}
         r = requests.post(self.projects_url, headers=self.headers, data=data)
         if r.status_code == 201:
-            return True
+            return json.loads(r.content)
         else:
+            print r
             return False
 
     def createProjectUser(self, id_, name, description="", default_branch="", issues_enabled="", wall_enabled="",
@@ -252,6 +265,7 @@ class Gitlab(object):
         if r.status_code == 201:
             return True
         else:
+            print r
             return False
 
     def listProjectMembers(self, id_):
@@ -259,6 +273,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return json.loads(r.content)
         else:
+            print r
             return False
 
     def addProjectMember(self, id_, user_id, access_level):
@@ -277,6 +292,7 @@ class Gitlab(object):
         if r.status_code == 201:
             return True
         else:
+            print r
             return False
 
     def editProjectMember(self,id_, user_id, access_level):
@@ -294,6 +310,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return True
         else:
+            print r
             return False
 
     def deleteProjectMember(self, id_, user_id):
@@ -306,6 +323,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return json.loads(r.content)
         else:
+            print r
             return False
 
     def getProjectHook(self, id_, hook_id):
@@ -313,6 +331,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return json.loads(r.content)
         else:
+            print r
             return False
 
     def addProjectHook(self, id_, url):
@@ -322,6 +341,7 @@ class Gitlab(object):
         if r.status_code == 201:
             return True
         else:
+            print r
             return False
 
     def editProjectHook(self, id_, hook_id, url):
@@ -331,6 +351,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return True
         else:
+            print r
             return False
 
     def deleteProjectHook(self, id_, hook_id):
@@ -338,6 +359,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return True
         else:
+            print r
             return False
 
     def listBranches(self, id_):
@@ -345,6 +367,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return json.loads(r.content)
         else:
+            print r
             return False
 
     def listBranch(self, id_, branch):
@@ -353,6 +376,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return json.loads(r.content)
         else:
+            print r
             return False
 
     def protectBranch(self, id_, branch):
@@ -361,6 +385,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return True
         else:
+            print r
             return False
 
     def unprotectBranch(self, id_, branch):
@@ -369,6 +394,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return True
         else:
+            print r
             return False
 
     def createForkRelation(self, id_, from_):
@@ -377,6 +403,7 @@ class Gitlab(object):
         if r.status_code == 201:
             return True
         else:
+            print r
             return False
 
     def removeForkRelation(self, id_):
@@ -384,13 +411,15 @@ class Gitlab(object):
         if r.status_code == 200:
             return True
         else:
+            print r
             return False
 
     def getIssues(self):
-        r = requests.get("http://" + self.host + "/api/v3/issues", headers=self.headers)
+        r = requests.get(self.host + "/api/v3/issues", headers=self.headers)
         if r.status_code == 200:
             return json.loads(r.content)
         else:
+            print r
             return False
 
     def getProjectIssues(self, id_):
@@ -398,6 +427,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return json.loads(r.content)
         else:
+            print r
             return False
 
     def getProjectIssue(self, id_, issue_id):
@@ -405,6 +435,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return json.loads(r.content)
         else:
+            print r
             return False
 
     def createIssue(self, id_, title, description="", assignee_id="", milestone_id="", labels=""):
@@ -414,6 +445,7 @@ class Gitlab(object):
         if r.status_code == 201:
             return True
         else:
+            print r
             return False
 
     def editIssue(self, id_, issue_id, title="", description="", assignee_id="", milestone_id="", labels="",
@@ -425,6 +457,7 @@ class Gitlab(object):
         if r.status_code == 201:
             return True
         else:
+            print r
             return False
 
     def getMilestones(self, id_):
@@ -432,6 +465,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return json.loads(r.content)
         else:
+            print r
             return False
 
     def getMilestone(self, id_, milestone_id):
@@ -439,6 +473,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return json.loads(r.content)
         else:
+            print r
             return False
 
     def createMilestone(self, id_, title, description="", due_date=""):
@@ -447,6 +482,7 @@ class Gitlab(object):
         if r.status_code == 201:
             return True
         else:
+            print r
             return False
 
     def editMilestone(self, id_, milestone_id, title="", description="", due_date="", state_event=""):
@@ -457,6 +493,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return True
         else:
+            print r
             return False
 
     def listdeployKeys(self, id_):
@@ -469,6 +506,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return json.loads(r.content)
         else:
+            print r
             return False
 
     def listDeployKey(self, id_, key_id):
@@ -482,6 +520,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return json.loads(r.content)
         else:
+            print r
             return False
 
     def addDeployKey(self, id_, title, key):
@@ -498,6 +537,7 @@ class Gitlab(object):
         if r.status_code == 201:
             return True
         else:
+            print r
             return False
 
     def deleteDeployKey(self, id_, key_id):
@@ -511,6 +551,7 @@ class Gitlab(object):
         if r.status_code == 200:
             return True
         else:
+            print r
             return False
 
     def getReadme(self, repo, md=False):
@@ -530,3 +571,41 @@ class Gitlab(object):
                 return markdown.markdown(r.content)
             else:
                 return r.content
+
+    def createGroup(self, name, path):
+        """
+        Creates a new group
+        :param name: The name of the group
+        :param path: The path for the group
+        """
+        r = requests.post(self.groups_url, data={'name': name, 'path': path}, headers=self.headers)
+        if r.status_code == 201:
+            return True
+        else:
+            print r
+            return False
+
+    def getGroups(self, id_=None):
+        """
+        Retrieve group information
+        :param id_: Specify a group. Otherwise, all groups are returned
+        """
+        r = requests.get("{}/{}".format(self.groups_url, id_ if id_ else ""), headers=self.headers)
+        if r.status_code == 200:
+            return json.loads(r.content)
+        else:
+            print r
+            return False
+
+    def moveProject(self, groupID, projectID):
+        """
+        Move a given project into a given group
+        :param groupID: ID of the destination group
+        :param projectID: ID of the project to be moved
+        """
+        r = requests.post("{}/{}/projects/{}".format(self.groups_url, groupID, projectID), headers=self.headers)
+        if r.status_code == 201:
+            return True
+        else:
+            print r
+            return False
