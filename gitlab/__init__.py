@@ -295,7 +295,7 @@ class Gitlab(object):
             print r
             return False
 
-    def editProjectMember(self,id_, user_id, access_level):
+    def editProjectMember(self, id_, user_id, access_level):
         if access_level.lower() == "master":
             access_level = 40
         elif access_level.lower() == "developer":
@@ -604,6 +604,101 @@ class Gitlab(object):
         :param projectID: ID of the project to be moved
         """
         r = requests.post("{}/{}/projects/{}".format(self.groups_url, groupID, projectID), headers=self.headers)
+        if r.status_code == 201:
+            return True
+        else:
+            print r
+            return False
+
+    def getMergeRequests(self, projectID, page=None, per_page=None):
+        """
+        Get all the merge requests for a project.
+        :param projectID: ID of the project to retrieve merge requests for
+        :param page: If pagination is set, which page to return
+        :param per_page: Number of merge requests to return per page
+        """
+        params = {'page': page, 'per_page': per_page}
+        url_str = '{}/{}/merge_requests'.format(self.projects_url, projectID)
+        r = requests.get(url_str, params=params, headers=self.headers)
+
+        if r.status_code == 200:
+            return json.loads(r.content)
+        else:
+            print r
+            return False
+
+    def getMergeRequest(self, projectID, mergeRequestID):
+        """
+        Get information about a specific merge request.
+        :param projectID: ID of the project
+        :param mergeRequestID: ID of the merge request
+        """
+        url_str = '{}/{}/merge_request/{}'.format(self.projects_url, projectID, mergeRequestID)
+        r = requests.get(url_str, headers=self.headers)
+
+        if r.status_code == 200:
+            return json.loads(r.content)
+        else:
+            print r
+            return False
+            
+    def createMergeRequest(self, projectID, sourceBranch, targetBranch, title, assigneeID=None):
+        """
+        Create a new merge request.
+        :param projectID: ID of the project originating the merge request
+        :param sourceBranch: name of the branch to merge from
+        :param targetBranch: name of the branch to merge to
+        :param title: Title of the merge request
+        :param assigneeID: Assignee user ID
+        """
+        url_str = '{}/{}/merge_requests'.format(self.projects_url, projectID)
+        params = {'source_branch': sourceBranch,
+                  'target_branch': targetBranch,
+                  'title': title,
+                  'assignee_id': assigneeID}
+
+        r = requests.post(url_str, data=params, headers=self.headers)
+        if r.status_code == 201:
+            return True
+        else:
+            print r
+            return False
+
+    def updateMergeRequest(self, projectID, mergeRequestID, sourceBranch=None, targetBranch=None, title=None, assigneeID=None, closed=None):
+        """
+        Update an existing merge request.
+        :param projectID: ID of the project originating the merge request
+        :param mergeRequestID: ID of the merge request to update
+        :param sourceBranch: name of the branch to merge from
+        :param TargetBranch: name of the branch to merge to
+        :param title: Title of the merge request
+        :param assigneeID: Assignee user ID
+        :param closed: MR status.  True = closed
+        """
+        url_str = '{}/{}/merge_request/{}'.format(self.projects_url, projectID, mergeRequestID)
+        params = {'source_branch': sourceBranch,
+                  'target_branch': targetBranch,
+                  'title': title,
+                  'assignee_id': assigneeID,
+                  'closed': closed}
+
+        r = requests.post(url_str, data=params, headers=self.headers)
+        if r.status_code == 201:
+            return True
+        else:
+            print r
+            return False
+
+    def addCommentToMergeRequest(self, projectID, mergeRequestID, note):
+        """
+        Add a comment to a merge request.
+        :param projectID: ID of the project originating the merge request
+        :param mergeRequestID: ID of the merge request to comment on
+        :param note: Text of comment
+        """
+        url_str = '{}/{}/merge_request/{}/comments'.format(self.projects_url, projectID, mergeRequestID)
+        r = requests.post(url_str, data={'note': note}, headers=self.headers)
+
         if r.status_code == 201:
             return True
         else:
