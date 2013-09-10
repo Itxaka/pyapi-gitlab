@@ -590,7 +590,7 @@ class Gitlab(object):
         Retrieve group information
         :param id_: Specify a group. Otherwise, all groups are returned
         """
-        r = requests.get("{}/{}".format(self.groups_url, id_ if id_ else ""), headers=self.headers)
+        r = requests.get("{0}/{1}".format(self.groups_url, id_ if id_ else ""), headers=self.headers)
         if r.status_code == 200:
             return json.loads(r.content)
         else:
@@ -603,7 +603,7 @@ class Gitlab(object):
         :param groupID: ID of the destination group
         :param projectID: ID of the project to be moved
         """
-        r = requests.post("{}/{}/projects/{}".format(self.groups_url, groupID, projectID), headers=self.headers)
+        r = requests.post("{0}/{1}/projects/{2}".format(self.groups_url, groupID, projectID), headers=self.headers)
         if r.status_code == 201:
             return True
         else:
@@ -618,7 +618,7 @@ class Gitlab(object):
         :param per_page: Number of merge requests to return per page
         """
         params = {'page': page, 'per_page': per_page}
-        url_str = '{}/{}/merge_requests'.format(self.projects_url, projectID)
+        url_str = '{0}/{1}/merge_requests'.format(self.projects_url, projectID)
         r = requests.get(url_str, params=params, headers=self.headers)
 
         if r.status_code == 200:
@@ -633,7 +633,7 @@ class Gitlab(object):
         :param projectID: ID of the project
         :param mergeRequestID: ID of the merge request
         """
-        url_str = '{}/{}/merge_request/{}'.format(self.projects_url, projectID, mergeRequestID)
+        url_str = '{0}/{1}/merge_request/{2}'.format(self.projects_url, projectID, mergeRequestID)
         r = requests.get(url_str, headers=self.headers)
 
         if r.status_code == 200:
@@ -651,7 +651,7 @@ class Gitlab(object):
         :param title: Title of the merge request
         :param assigneeID: Assignee user ID
         """
-        url_str = '{}/{}/merge_requests'.format(self.projects_url, projectID)
+        url_str = '{0}/{1}/merge_requests'.format(self.projects_url, projectID)
         params = {'source_branch': sourceBranch,
                   'target_branch': targetBranch,
                   'title': title,
@@ -675,7 +675,7 @@ class Gitlab(object):
         :param assigneeID: Assignee user ID
         :param closed: MR status.  True = closed
         """
-        url_str = '{}/{}/merge_request/{}'.format(self.projects_url, projectID, mergeRequestID)
+        url_str = '{0}/{1}/merge_request/{2}'.format(self.projects_url, projectID, mergeRequestID)
         params = {'source_branch': sourceBranch,
                   'target_branch': targetBranch,
                   'title': title,
@@ -696,7 +696,7 @@ class Gitlab(object):
         :param mergeRequestID: ID of the merge request to comment on
         :param note: Text of comment
         """
-        url_str = '{}/{}/merge_request/{}/comments'.format(self.projects_url, projectID, mergeRequestID)
+        url_str = '{0}/{1}/merge_request/{2}/comments'.format(self.projects_url, projectID, mergeRequestID)
         r = requests.post(url_str, data={'note': note}, headers=self.headers)
 
         if r.status_code == 201:
