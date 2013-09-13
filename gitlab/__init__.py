@@ -11,7 +11,7 @@ import markdown
 
 
 class Gitlab(object):
-    def __init__(self, host, token="", version=5):
+    def __init__(self, host, token=""):
         if token != "":
             self.token = token
             self.headers = {"PRIVATE-TOKEN": self.token}
@@ -20,7 +20,6 @@ class Gitlab(object):
         self.users_url = self.host + "/api/v3/users"
         self.keys_url = self.host + "/api/v3/user/keys"
         self.groups_url = self.host + "/api/v3/groups"
-        self.version = version
 
     def login(self, email, password):
         data = {"email": email, "password": password}
@@ -273,8 +272,9 @@ class Gitlab(object):
 
         # if gitlab is the new 6th version, there is a public option for the
         # project creation
-        if self.version == 6:
+        if len(public) > 0:
             data['public'] = public
+        #request now works with both GitLab 5 and GitLab 6.
         request = requests.post(self.projects_url, headers=self.headers,
                                 data=data)
         if request.status_code == 201:
