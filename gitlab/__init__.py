@@ -214,13 +214,14 @@ class Gitlab(object):
         else:
             return True
 
-    def getProjects(self):
+    def getProjects(self, page=1, per_page=20):
         """
         Returns a dictionary of all the projects
         :return: list with the repo name, description, last activity,
          web url, ssh url, owner and if its public
         """
-        request = requests.get(self.projects_url, headers=self.headers)
+        params = {'page': page, 'per_page': per_page}
+        request = requests.get(self.projects_url, params=params, headers=self.headers)
         if request.status_code == 200:
             return json.loads(request.content)
         else:
