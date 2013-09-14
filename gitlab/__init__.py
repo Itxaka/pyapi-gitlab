@@ -15,7 +15,10 @@ class Gitlab(object):
         if token != "":
             self.token = token
             self.headers = {"PRIVATE-TOKEN": self.token}
-        self.host = host
+        if host[-1] == '/':
+            self.host = host[:-1]
+        else:
+            self.host = host
         self.projects_url = self.host + "/api/v3/projects"
         self.users_url = self.host + "/api/v3/users"
         self.keys_url = self.host + "/api/v3/user/keys"
