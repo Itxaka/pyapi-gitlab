@@ -35,21 +35,24 @@ class Gitlab(object):
             print request
             return False
 
-    def getUsers(self, id_=0):
+    def getUsers(self, id_=0, page=1, per_page=20):
         """
         Return a user list
         :param id_: the id of the user to get instead of getting all users,
          return all users if 0
+        :param page: Which page to return (default is 1)
+        :param per_page: Number of items to return per page (default is 20)
         return: returs a dictionary of the users, false if there is an error
         """
+        params = {'page': page, 'per_page': per_page}
         if id_ != 0:
             request = requests.get(self.host + "/api/v3/users/" + str(id_),
-                             headers=self.headers)
+                             params=params, headers=self.headers)
             user = json.loads(request.content)
             return [user['id'], user['username'], user['name'], user['email'],
                     user['state'], user['created_at']]
         else:
-            request = requests.get(self.users_url, headers=self.headers)
+            request = requests.get(self.users_url, params=params, headers=self.headers)
             if request.status_code == 200:
                 return json.loads(request.content)
             else:
@@ -217,6 +220,8 @@ class Gitlab(object):
     def getProjects(self, page=1, per_page=20):
         """
         Returns a dictionary of all the projects
+        :param page: Which page to return (default is 1)
+        :param per_page: Number of items to return per page (default is 20)
         :return: list with the repo name, description, last activity,
          web url, ssh url, owner and if its public
         """
@@ -242,15 +247,18 @@ class Gitlab(object):
             print request
             return False
 
-    def getProjectEvents(self, id_):
+    def getProjectEvents(self, id_, page=1, per_page=20):
         """
         Get the project identified by id, events(commits)
         :param id_: id of the project
+        :param page: Which page to return (default is 1)
+        :param per_page: Number of items to return per page (default is 20)
         :return: False if no project with that id, a dictionary
          with the events if found
         """
+        params = {'page': page, 'per_page': per_page}
         request = requests.get(self.projects_url + "/" + str(id_) +
-                         "/events", headers=self.headers)
+                         "/events", params=params, headers=self.headers)
         if request.status_code == 200:
             return json.loads(request.content)
         else:
@@ -472,18 +480,31 @@ class Gitlab(object):
             print request
             return False
 
-    def getIssues(self):
+    def getIssues(self, page=1, per_page=20):
+        """
+        Return a global list of issues for your user.
+        :param page: Which page to return (default is 1)
+        :param per_page: Number of items to return per page (default is 20)
+        """
+        params = {'page': page, 'per_page': per_page}
         request = requests.get(self.host + "/api/v3/issues",
-                               headers=self.headers)
+                               params=params, headers=self.headers)
         if request.status_code == 200:
             return json.loads(request.content)
         else:
             print request
             return False
 
-    def getProjectIssues(self, id_):
+    def getProjectIssues(self, id_, page=1, per_page=20):
+        """
+        Return a list of issues for project id_.
+        :param id_: The id for the project.
+        :param page: Which page to return (default is 1)
+        :param per_page: Number of items to return per page (default is 20)
+        """
+        params = {'page': page, 'per_page': per_page}
         request = requests.get(self.projects_url + "/" + str(id_) +
-                         "/issues", headers=self.headers)
+                         "/issues", params=params, headers=self.headers)
         if request.status_code == 200:
             return json.loads(request.content)
         else:
@@ -671,14 +692,17 @@ class Gitlab(object):
             print request
             return False
 
-    def getGroups(self, id_=None):
+    def getGroups(self, id_=None, page=1, per_page=20):
         """
         Retrieve group information
         :param id_: Specify a group. Otherwise, all groups are returned
+        :param page: Which page to return (default is 1)
+        :param per_page: Number of items to return per page (default is 20)
         """
+        params = {'page': page, 'per_page': per_page}
         request = requests.get("{0}/{1}".format(self.groups_url,
                                                 id_ if id_ else ""),
-                               headers=self.headers)
+                               params=params, headers=self.headers)
         if request.status_code == 200:
             return json.loads(request.content)
         else:
