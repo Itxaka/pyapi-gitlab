@@ -26,10 +26,9 @@ Then we need to authenticate to our Gitlab instance. There is 2 ways of doing th
 Authenticating via user/password
 ==================================
 
-First create the instance passing the gitlab server as parameter, You can also pass the gitlab backend version as there are some differences
-between 5 and 6 (One example, when creating projects you cna make them public on gitlab 6, gitlab 5 doesn't have that option) default version is 5::
+First create the instance passing the gitlab server as parameter::
 
-   git = gitlab.Gitlab("our_gitlab_host","5")
+   git = gitlab.Gitlab("our_gitlab_host")
 
 Then call the login() method::
 
@@ -112,13 +111,15 @@ Get project events::
    git.getProjectEvents(project_id)
 
 Create a new project
+
 If you are using version 6 you can pass an extra "public" argument which makes the project public.
-Please note that Gitlab 5 doesn't have this option and you have to explicity declare your version of gitlab (See the start of the docs to find how)::
+
+Please note that Gitlab 5 doesn't have this option and using it will probably end in a failure while creating the project::
 
    git.createProject(name, description="", default_branch="",
-                      issues_enabled="", wall_enabled="",
-                      merge_requests_enabled="", wiki_enabled="",
-                      snippets_enabled="", public="")
+                      issues_enabled=0, wall_enabled=0,
+                      merge_requests_enabled=0, wiki_enabled=0,
+                      snippets_enabled=0, public=0)
 
 List project members::
 
