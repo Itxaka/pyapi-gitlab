@@ -266,9 +266,9 @@ class Gitlab(object):
             return False
 
     def createProject(self, name, description="", default_branch="",
-                      issues_enabled="", wall_enabled="",
-                      merge_requests_enabled="", wiki_enabled="",
-                      snippets_enabled="", public=""):
+                      issues_enabled=0, wall_enabled=0,
+                      merge_requests_enabled=0, wiki_enabled=0,
+                      snippets_enabled=0, public=0):
         """
         Create a project
         :param name: Obligatory
@@ -284,7 +284,7 @@ class Gitlab(object):
 
         # if gitlab is the new 6th version, there is a public option for the
         # project creation
-        if len(public) > 0:
+        if public != 0:
             data['public'] = public
         #request now works with both GitLab 5 and GitLab 6.
         request = requests.post(self.projects_url, headers=self.headers,
@@ -296,9 +296,9 @@ class Gitlab(object):
             return False
 
     def createProjectUser(self, id_, name, description="", default_branch="",
-                          issues_enabled="", wall_enabled="",
-                          merge_requests_enabled="", wiki_enabled="",
-                          snippets_enabled=""):
+                          issues_enabled=0, wall_enabled=0,
+                          merge_requests_enabled=0, wiki_enabled=0,
+                          snippets_enabled=0):
         """
         Create a project for the given user identified by id
         :param id_: id of the user to crete the project for
