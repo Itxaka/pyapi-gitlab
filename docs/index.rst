@@ -54,61 +54,61 @@ There are several functions to manage users
 
 Create user::
 
-   git.createUser("name", "username", "password", "email")
+   git.createuser("name", "username", "password", "email")
 
 Delete user::
 
-   git.deleteUser(user_id)
+   git.deleteuser(user_id)
 
 Edit user details::
 
-   git.editUser(user_id)
+   git.edituser(user_id)
 
 Get all the users::
 
-   print git.getUsers()
+   print git.getusers()
 
 Get the current user::
 
-   print git.currentUser()
+   print git.currentuser()
 
 Get the user SSH keys::
 
-   for key in git.getSshKeys():
+   for key in git.getsshkeys():
        print key
 
 Get one key for the current user, specified by the key ID::
 
-   print git.getSshKey(key_id)
+   print git.getsshkey(key_id)
 
 Add a new SSH key::
 
-    git.addSshKey("key name", "actual key")
+    git.addsshkey("key name", "actual key")
 
 Add a new SSH key for a specified user, identified by ID::
 
-   addSshKeyUser(user_id, "key name", "actual key")
+   addsshkeyuser(user_id, "key name", "actual key")
 
 Delete a SSH key for the current user::
 
-   git.deleteSshKey(key_id)
+   git.deletesshkey(key_id)
 
 Projects
 ===========
 
 Get all the projects::
 
-   project = git.getProjects()
+   project = git.getprojects()
    for proj in project:
        print proj
 
 Get one project, identified by ID::
 
-   git.getProject(project_id)
+   git.getproject(project_id)
 
 Get project events::
 
-   git.getProjectEvents(project_id)
+   git.getprojectevents(project_id)
 
 Create a new project
 
@@ -116,85 +116,85 @@ If you are using version 6 you can pass an extra "public" argument which makes t
 
 Please note that Gitlab 5 doesn't have this option and using it will probably end in a failure while creating the project::
 
-   git.createProject(name, description="", default_branch="",
+   git.createproject(name, description="", default_branch="",
                       issues_enabled=0, wall_enabled=0,
                       merge_requests_enabled=0, wiki_enabled=0,
                       snippets_enabled=0, public=0)
 
 List project members::
 
-   git.listProjectMembers(project_id)
+   git.listprojectmembers(project_id)
 
 Add a member to a project, access_level can be master,developer,reporter or guest::
 
-   git.addProjectMember(project_id, member_id, access_level)
+   git.addprojectmember(project_id, member_id, access_level)
 
 
 Edit a project member, access_level can be master,developer,reporter or guest::
 
-   git.editProjectMember(id_, user_id, access_level)
+   git.editprojectmember(id_, user_id, access_level)
 
 Delete a member from a project::
 
-   git.deleteProjectMember(project_id, member_id)
+   git.deleteprojectmember(project_id, member_id)
 
-Get the project Readme, you have to pass the web_url that getProject() provides::
+Get the project Readme, you have to pass the web_url that getproject() provides::
 
-    git.getReadme(proj['web_url'])
+    git.getreadme(proj['web_url'])
 
 Move a project::
 
-    git.moveProject(groupID, projectID)
+    git.moveproject(groupID, projectID)
 
 Hooks
 =====
 
 Get all the hooks::
 
-   git.getProjectHooks(project_id)
+   git.getprojecthooks(project_id)
 
 Get one hook, identified by ID::
 
-   git.getProjectHook(project_id, hook_id)
+   git.getprojecthook(project_id, hook_id)
 
 Edit one hook::
 
-   git.editProjectHook(id_, hook_id, url)
+   git.editprojecthook(id_, hook_id, url)
 
 Add a hook to a project::
 
-    git.addProjectHook(project_id, url_hook)
+    git.addprojecthook(project_id, url_hook)
 
 Delete a hook from a project::
 
-    git.deleteProjectHook(project_id, hook_id)
+    git.deleteprojecthook(project_id, hook_id)
 
 Branches
 ========
 
 Get all the branches for a project::
 
-   git.listBranches(1)
+   git.listbranches(1)
 
 Get a specific branch for a project::
 
-   git.listBranch(1, "master")
+   git.listbranch(1, "master")
 
 Protect a branch::
 
-   git.protectBranch(1, "master")
+   git.protectbranch(1, "master")
 
 Unprotect a branch::
 
-   git.unprotectBranch(1, "master")
+   git.unprotectbranch(1, "master")
 
 Create a relation between two projects (The usual "forked from xxxxx")::
 
-   git.createForkRelation(1, 3)
+   git.createforkrelation(1, 3)
 
 Remove fork relation::
 
-   git.removeForkRelation(1)
+   git.removeforkrelation(1)
 
 
 Issues
@@ -202,23 +202,23 @@ Issues
 
 Get all the issues::
 
-   get.getIssues()
+   get.getissues()
 
 Get a project issues::
 
-   git.getProjectIssues(1)
+   git.getprojectissues(1)
 
 Get a specified issue from a project::
 
-   git.getProjectIssue(1,1)
+   git.getprojectissue(1,1)
 
 Create an issue::
 
-   git.createIssue(1, "pedsdfdwsdne")
+   git.createissue(1, "pedsdfdwsdne")
 
 Edit an issue, you can pass state_event="closed" to close it::
 
-   git.editIssue(1,1, title="Changing title")
+   git.editissue(1,1, title="Changing title")
 
 
 Milestones
@@ -226,59 +226,59 @@ Milestones
 
 Get all the milestones::
 
-   git.getMilestones(1)
+   git.getmilestones(1)
 
 Get a specific milestone from a project::
 
-   git.getMilestone(1,1)
+   git.getmilestone(1,1)
 
 Create a new milestone::
 
-   git.createMilestone(1,"New milestone")
+   git.createmilestone(1,"New milestone")
 
 Edit a milestone, you can pass state_event="closed" to close it::
 
-   git.editMilestone(1,1,title="Change milestone title")
+   git.editmilestone(1,1,title="Change milestone title")
 
 Deploy Keys
 ===========
 Get all the deployed keys for a project::
 
-   git.listdeployKeys(id_)
+   git.listdeploykeys(id_)
 
 Get one key for a project::
 
-   git.listDeployKey(id_, key_id)
+   git.listdeploykey(id_, key_id)
 
 Add a key to a project::
 
-   git.addDeployKey(id_, title, key)
+   git.adddeploykey(id_, title, key)
 
 Delete a key from a project::
 
-   git.deleteDeployKey(id_, key_id)
+   git.deletedeploykey(id_, key_id)
 
 Groups
 ========
 
 Create a group::
 
-    def createGroup(self, name, path):
+    def creategroup(self, name, path):
 
 Get a group. If none are specified returns all the groups::
 
-    def getGroups(self, id_=None):
+    def getgroups(self, id_=None):
 
 Merge support
 ==============
 
 Get all the merge requests for a project::
 
-    git.getMergeRequests(projectID, page=None, per_page=None)
+    git.getmergerequests(projectID, page=None, per_page=None)
 
 Get information about a specific merge request::
 
-    git.getMergeRequest(projectID, mergeRequestID)
+    git.getmergerequest(projectID, mergeRequestID)
 
 Create a new merge request::
 
@@ -286,9 +286,9 @@ Create a new merge request::
 
 Update an existing merge request::
 
-    git.updateMergeRequest(projectID, mergeRequestID, sourceBranch=None, targetBranch=None, title=None, assigneeID=None, closed=None)
+    git.updatemergerequest(projectID, mergeRequestID, sourceBranch=None, targetBranch=None, title=None, assigneeID=None, closed=None)
 
 Add a comment to a merge request::
 
-    git.addCommentToMergeRequest(projectID, mergeRequestID, note)
+    git.addcommenttomergerequest(projectID, mergeRequestID, note)
 
