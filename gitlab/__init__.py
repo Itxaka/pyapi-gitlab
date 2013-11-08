@@ -38,7 +38,6 @@ class Gitlab(object):
         :param password: gitlab password
         :return: True if login successfull
         """
-        self.user = user
         data = {"email": user, "password": password}
         request = requests.post(self.host + "/api/v3/session", data=data)
         if request.status_code == 201:
