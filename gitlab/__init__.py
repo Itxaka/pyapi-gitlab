@@ -13,11 +13,10 @@ class Gitlab(object):
     """
     Gitlab class
     """
-    def __init__(self, host, user, token=""):
+    def __init__(self, host, token=""):
         """
         on init we setup the token used for all the api calls and all the urls
         :param host: host of gitlab
-        :param user: user
         :param token: token
         """
         if token != "":
@@ -31,7 +30,6 @@ class Gitlab(object):
         self.users_url = self.host + "/api/v3/users"
         self.keys_url = self.host + "/api/v3/user/keys"
         self.groups_url = self.host + "/api/v3/groups"
-        self.user = user
 
     def login(self, user, password):
         """
