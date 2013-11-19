@@ -17,7 +17,6 @@ class Gitlab(object):
         """
         on init we setup the token used for all the api calls and all the urls
         :param host: host of gitlab
-        :param user: user
         :param token: token
         """
         if token != "":
