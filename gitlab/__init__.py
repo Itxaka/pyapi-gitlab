@@ -1063,19 +1063,29 @@ class Gitlab(object):
             
             return False
 
-    def getmergerequests(self, project_id, page=1, per_page=20, sudo=""):
+    def getmergerequests(self, project_id, page=1, per_page=20, sudo="", state=None):
         """
         Get all the merge requests for a project.
         :param project_id: ID of the project to retrieve merge requests for
         :param page: If pagination is set, which page to return
         :param per_page: Number of merge requests to return per page
         """
-        data = {'page': page, 'per_page': per_page}
+        # data = {'page': page, 'per_page': per_page}
+        # if state is not None:
+        #     data['state'] =
+        data = {}
+        if page is not None:
+            data['page'] = page
+            data['per_page'] = per_page
+        if state is not None:
+            data['state'] = state
+
         if sudo != "":
             data['sudo'] = sudo
         url_str = '{0}/{1}/merge_requests'.format(self.projects_url, project_id)
         request = requests.get(url_str, params=data, headers=self.headers,
                                verify=self.verify_ssl)
+
 
         if request.status_code == 200:
             return json.loads(request.content.decode("utf-8"))
@@ -1151,13 +1161,12 @@ class Gitlab(object):
         if sudo != "":
             data['sudo'] = sudo
 
-        request = requests.post(url_str, data=data, headers=self.headers, 
+        request = requests.put(url_str, data=data, headers=self.headers,
                                 verify=self.verify_ssl)
-        if request.status_code == 201:
+        if request.status_code == 200:
             return True
         else:
-            
-            return False
+            return request.headers['status']
 
     def addcommenttomergerequest(self, project_id, mergerequest_id, note):
         """
