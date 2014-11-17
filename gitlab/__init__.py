@@ -440,7 +440,7 @@ class Gitlab(object):
                           snippets_enabled=0, sudo=""):
         """
         Create a project for the given user identified by id
-        :param id_: id of the user to crete the project for
+        :param id_: id of the user to create the project for
         :param name: Obligatory
         :return: True if it created the project, False otherwise
         """
