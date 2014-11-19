@@ -440,7 +440,7 @@ class Gitlab(object):
                           snippets_enabled=0, sudo=""):
         """
         Create a project for the given user identified by id
-        :param id_: id of the user to crete the project for
+        :param id_: id of the user to create the project for
         :param name: Obligatory
         :return: True if it created the project, False otherwise
         """
@@ -584,7 +584,7 @@ class Gitlab(object):
             
             return False
 
-    def addprojecthook(self, id_, url):
+    def addprojecthook(self, id_, url, push=False, issues=False, merge_requests=False, tag_push=False):
         """
         add a hook to a project
         :param id_: project id
@@ -592,6 +592,10 @@ class Gitlab(object):
         :return: True if success
         """
         data = {"id": id_, "url": url}
+        data['push_events'] = int(bool(push))
+        data['issues_events'] = int(bool(issues))
+        data['merge_requests_events'] = int(bool(merge_requests))
+        data['tag_push_events'] = int(bool(tag_push))
         request = requests.post(self.projects_url + "/" + str(id_) + "/hooks",
                                 headers=self.headers, data=data, verify=self.verify_ssl)
         if request.status_code == 201:
@@ -599,7 +603,8 @@ class Gitlab(object):
         else:
             return False
 
-    def editprojecthook(self, id_, hook_id, url, sudo=""):
+    def editprojecthook(self, id_, hook_id, url, sudo="", push=False,
+            issues=False, merge_requests=False, tag_push=False):
         """
         edit an existing hook from a project
         :param id_: project id
@@ -609,6 +614,10 @@ class Gitlab(object):
         :return: True if success
         """
         data = {"id": id_, "hook_id": hook_id, "url": url}
+        data['push_events'] = int(bool(push))
+        data['issues_events'] = int(bool(issues))
+        data['merge_requests_events'] = int(bool(merge_requests))
+        data['tag_push_events'] = int(bool(tag_push))
         if sudo != "":
             data['sudo'] = sudo
         request = requests.put(self.projects_url + "/" + str(id_) + "/hooks/" +
