@@ -584,7 +584,7 @@ class Gitlab(object):
             
             return False
 
-    def addprojecthook(self, id_, url):
+    def addprojecthook(self, id_, url, push=False, issues=False, merge_requests=False, tag_push=False):
         """
         add a hook to a project
         :param id_: project id
@@ -592,6 +592,14 @@ class Gitlab(object):
         :return: True if success
         """
         data = {"id": id_, "url": url}
+        if push:
+            data['push_events'] = True
+        if issues:
+            data['issues_events'] = True
+        if merge_requests:
+            data['merge_requests_events'] = True
+        if tag_push:
+            data['tag_push_events'] = True
         request = requests.post(self.projects_url + "/" + str(id_) + "/hooks",
                                 headers=self.headers, data=data, verify=self.verify_ssl)
         if request.status_code == 201:
@@ -599,7 +607,8 @@ class Gitlab(object):
         else:
             return False
 
-    def editprojecthook(self, id_, hook_id, url, sudo=""):
+    def editprojecthook(self, id_, hook_id, url, push=False,
+            issues=False, merge_requests=False, tag_push=False, sudo=""):
         """
         edit an existing hook from a project
         :param id_: project id
@@ -609,6 +618,14 @@ class Gitlab(object):
         :return: True if success
         """
         data = {"id": id_, "hook_id": hook_id, "url": url}
+        if push:
+            data['push_events'] = True
+        if issues:
+            data['issues_events'] = True
+        if merge_requests:
+            data['merge_requests_events'] = True
+        if tag_push:
+            data['tag_push_events'] = True
         if sudo != "":
             data['sudo'] = sudo
         request = requests.put(self.projects_url + "/" + str(id_) + "/hooks/" +
