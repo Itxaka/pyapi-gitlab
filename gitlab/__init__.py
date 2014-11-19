@@ -603,8 +603,8 @@ class Gitlab(object):
         else:
             return False
 
-    def editprojecthook(self, id_, hook_id, url, push=False,
-            issues=False, merge_requests=False, tag_push=False, sudo=""):
+    def editprojecthook(self, id_, hook_id, url, sudo="", push=False,
+            issues=False, merge_requests=False, tag_push=False):
         """
         edit an existing hook from a project
         :param id_: project id
