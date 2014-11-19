@@ -592,14 +592,10 @@ class Gitlab(object):
         :return: True if success
         """
         data = {"id": id_, "url": url}
-        if push:
-            data['push_events'] = True
-        if issues:
-            data['issues_events'] = True
-        if merge_requests:
-            data['merge_requests_events'] = True
-        if tag_push:
-            data['tag_push_events'] = True
+        data['push_events'] = 1 if push else 0
+        data['issues_events'] = 1 if issues else 0
+        data['merge_requests_events'] = 1 if merge_requests else 0
+        data['tag_push_events'] = 1 if tag_push else 0
         request = requests.post(self.projects_url + "/" + str(id_) + "/hooks",
                                 headers=self.headers, data=data, verify=self.verify_ssl)
         if request.status_code == 201:
@@ -618,14 +614,10 @@ class Gitlab(object):
         :return: True if success
         """
         data = {"id": id_, "hook_id": hook_id, "url": url}
-        if push:
-            data['push_events'] = True
-        if issues:
-            data['issues_events'] = True
-        if merge_requests:
-            data['merge_requests_events'] = True
-        if tag_push:
-            data['tag_push_events'] = True
+        data['push_events'] = 1 if push else 0
+        data['issues_events'] = 1 if issues else 0
+        data['merge_requests_events'] = 1 if merge_requests else 0
+        data['tag_push_events'] = 1 if tag_push else 0
         if sudo != "":
             data['sudo'] = sudo
         request = requests.put(self.projects_url + "/" + str(id_) + "/hooks/" +
