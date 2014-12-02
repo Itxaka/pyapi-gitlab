@@ -1,18 +1,18 @@
 env:
   - gitlab_user=root gitlab_password=5iveL!fe gitlab_host=http://localhost:8080
-#  global:
-#  - secure: LLkxKuTpD5D4k8x8qCXKGdwLpQvlVZ0AuC0TOYTPcZfm0VJE/Ppg+XgikiIdlD5f2+u/fBfn6FwMfdcnawGrNCJjNtLuQ9Dp4vTvqBfgsUhmkPAkV1nbKajYSgyAvFxKyhYhQlLra3gV6pplIFtKg7KZmtwnN5BqWmvA4m3rd9U=
-#  - secure: bpXQdUjLAAF+IQLgsZPGA8Dy5YgbJvRW4QO0zEzLmFTl7/Cr5OsKHFEWtBoGlziP+l+A+iDLTDYsX6gF6d9WFv1SItnMEWwNzWG7ef4sQ4VSoK9vdJ9bon/a+mU3Za1rZ1hd9PjJBuhj6QY4pmIQiMebcuYP0ekg6zsn3RNSO1Q=
 services:
   - redis-server
 language: python
 python:
-  - "2.6"
   - "2.7"
   - "3.2"
   - "3.3"
+  - "3.4"
+rvm:
+  - 2.1.0
 # install local gitlab
 before_install:
+  - gem install bundler --no-ri --no-rdoc
   - scripts/prepare_test_env.sh
   - scripts/install_gitlab.sh
 # command to install dependencies

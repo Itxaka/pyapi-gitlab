@@ -268,6 +268,14 @@ Get a specific branch for a project::
 
    git.listbranch(1, "master")
 
+Create a branch::
+
+   git.createbranch(1, "newbranch", "7b5c3cc8be40ee161ae89a06bba6229da1032a0c")
+
+Delete a branch::
+
+   git.deletebranch(1, "newbranch")
+
 Protect a branch::
 
    git.protectbranch(1, "master")
@@ -324,7 +332,7 @@ Create a new milestone::
 
    git.createmilestone(1,"New milestone")
 
-Edit a milestone, you can pass state_event="closed" to close it::
+Edit a milestone, you can pass state_event="close" to close it::
 
    git.editmilestone(1,1,title="Change milestone title")
 
@@ -534,12 +542,14 @@ Creat a note in the wall of a merge request::
 Files
 =====
 
-Version 6.2 added support for files.
-
 Create a new file in the repository::
 
     git.createfile(project_id, file_path, branch_name, content, commit_message)
-    
+
+Get a file::
+
+    git.getfile(self, project_id, file_path, ref):
+
 Update an existing file::
 
     git.updatefile(project_id, file_path, branch_name, content, commit_message)
