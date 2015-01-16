@@ -1070,9 +1070,6 @@ class Gitlab(object):
         :param page: If pagination is set, which page to return
         :param per_page: Number of merge requests to return per page
         """
-        # data = {'page': page, 'per_page': per_page}
-        # if state is not None:
-        #     data['state'] =
         data = {}
         if page is not None:
             data['page'] = page
