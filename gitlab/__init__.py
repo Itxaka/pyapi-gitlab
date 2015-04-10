@@ -993,13 +993,16 @@ class Gitlab(object):
             msg = json.loads(request.content.decode("utf-8"))['message']
             return exceptions.HttpError(msg)
 
-    def getgroups(self, group_id=None, page=1, per_page=20):
+    def getgroups(self, group_id=None, search=None, page=1, per_page=20):
         """Retrieve group information
 
         :param group_id: Specify a group. Otherwise, all groups are returned
         :return: list of groups
         """
         data = {'page': page, 'per_page': per_page}
+
+        if search:
+            data['search'] = search
 
         request = requests.get("{0}/{1}".format(self.groups_url,
                                               group_id if group_id else ""),
