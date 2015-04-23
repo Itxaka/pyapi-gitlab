@@ -8,11 +8,20 @@ Check the license on the LICENSE file
 import requests
 import json
 from . import exceptions
-try:
-    from urllib import quote_plus
-except ImportError:
-    from urllib.parse import quote_plus
+from functools import wraps
+import sys
+
+if sys.version_info.major == 3:
     basestring = str
+
+
+def urlencode_strings(func):
+    @wraps(func)
+    def inner(*args, **kwargs):
+        new_args = (a.replace("/", "%2F") if isinstance(a, basestring) else a for a in args)
+        new_kwargs = {k: v.replace("/", "%2F") if isinstance(v, basestring) else v for k, v in kwargs.items()}
+        return func(*new_args, **new_kwargs)
+    return inner
 
 
 class Gitlab(object):
@@ -304,14 +313,13 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getproject(self, project_id):
         """Get info for a project identified by id or namespace/project_name
 
         :param project_id: id or namespace/project_name of the project
         :return: False if not found, a dictionary if found
         """
-        if isinstance(project_id, basestring):
-            project_id = quote_plus(project_id)
         request = requests.get("{0}/{1}".format(self.projects_url, project_id),
                                headers=self.headers, verify=self.verify_ssl)
         if request.status_code == 200:
@@ -319,6 +327,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getprojectevents(self, project_id, page=1, per_page=20):
         """Get the project identified by id, events(commits)
 
@@ -368,6 +377,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def deleteproject(self, project_id):
         """Delete a project
 
@@ -409,6 +419,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def getprojectmembers(self, project_id, query=None, page=1, per_page=20):
         """Lists the members of a given project id
 
@@ -430,6 +441,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def addprojectmember(self, project_id, user_id, access_level):
         """Adds a project member to a project
 
@@ -455,6 +467,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def editprojectmember(self, project_id, user_id, access_level):
         """Edit a project member
 
@@ -482,6 +495,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def deleteprojectmember(self, project_id, user_id):
         """Delete a project member
 
@@ -494,6 +508,7 @@ class Gitlab(object):
         if request.status_code == 200:
             return True  # It always returns true
 
+    @urlencode_strings
     def getprojecthooks(self, project_id, page=1, per_page=20):
         """Get all the hooks from a project
 
@@ -508,6 +523,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getprojecthook(self, project_id, hook_id):
         """Get a particular hook from a project
 
@@ -523,6 +539,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def addprojecthook(self, project_id, url, push=False, issues=False, merge_requests=False, tag_push=False):
         """
         add a hook to a project
@@ -542,8 +559,9 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def editprojecthook(self, project_id, hook_id, url, push=False,
-            issues=False, merge_requests=False, tag_push=False):
+                        issues=False, merge_requests=False, tag_push=False):
         """
         edit an existing hook from a project
         :param id_: project id
@@ -563,6 +581,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def deleteprojecthook(self, project_id, hook_id):
         """Delete a project hook
 
@@ -631,6 +650,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getbranches(self, project_id):
         """List all the branches from a project
 
@@ -644,6 +664,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getbranch(self, project_id, branch):
         """List one branch from a project
 
@@ -658,6 +679,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def createbranch(self, project_id, branch, ref):
         """Create branch from commit SHA or existing branch
 
@@ -675,6 +697,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def deletebranch(self, project_id, branch):
         """Delete branch by name
 
@@ -691,6 +714,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def protectbranch(self, project_id, branch):
         """Protect a branch from changes
 
@@ -705,6 +729,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def unprotectbranch(self, project_id, branch):
         """Stop protecting a branch
 
@@ -720,6 +745,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def createforkrelation(self, project_id, from_project_id):
         """Create a fork relation. This DO NOT create a fork but only adds a link as fork the relation between 2 repositories
 
@@ -736,6 +762,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def removeforkrelation(self, project_id):
         """Remove an existing fork relation. this DO NOT remove the fork,only the relation between them
 
@@ -750,6 +777,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def createfork(self, project_id):
         """Forks a project into the user namespace of the authenticated user.
 
@@ -779,6 +807,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def getprojectissues(self, project_id, page=1, per_page=20, **kwargs):
         """Return a list of issues for project id.
 
@@ -788,7 +817,7 @@ class Gitlab(object):
         kwargs['page'] = page
         kwargs['per_page'] = per_page
         data = kwargs
-        
+
         request = requests.get("{0}/{1}/issues".format(self.projects_url, project_id),
                                params=data, headers=self.headers, verify=self.verify_ssl)
         if request.status_code == 200:
@@ -796,6 +825,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getprojectissue(self, project_id, issue_id):
         """Get an specific issue id from a project
 
@@ -811,6 +841,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def createissue(self, project_id, title, **kwargs):
         """Create a new issue
 
@@ -828,6 +859,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def editissue(self, project_id, issue_id, **kwargs):
         """Edit an existing issue data
 
@@ -845,6 +877,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getmilestones(self, project_id, page=1, per_page=20):
         """Get the milestones for a project
 
@@ -860,6 +893,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def getmilestone(self, project_id, milestone_id):
         """Get an specific milestone
 
@@ -875,6 +909,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def createmilestone(self, project_id, title, **kwargs):
         """Create a new milestone
 
@@ -898,6 +933,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def editmilestone(self, project_id, milestone_id, **kwargs):
         """Edit an existing milestone
 
@@ -921,6 +957,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def getdeploykeys(self, project_id):
         """Get a list of a project's deploy keys.
 
@@ -935,6 +972,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def getdeploykey(self, project_id, key_id):
         """Get a single key.
 
@@ -958,6 +996,8 @@ class Gitlab(object):
         :param key: the key itself
         :return: true if sucess, false if not
         """
+        if isinstance(project_id, basestring):
+            project_id = quote_plus(project_id)
         data = {"id": project_id, "title": title, "key": key}
 
         request = requests.post("{0}/{1}/keys".format(self.projects_url, project_id),
@@ -968,6 +1008,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def deletedeploykey(self, project_id, key_id):
         """Delete a deploy key from a project
 
@@ -1017,6 +1058,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def moveproject(self, group_id, project_id):
         """Move a given project into a given group
 
@@ -1034,6 +1076,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def getmergerequests(self, project_id, page=1, per_page=20, state=None):
         """Get all the merge requests for a project.
 
@@ -1052,6 +1095,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def getmergerequest(self, project_id, mergerequest_id):
         """Get information about a specific merge request.
 
@@ -1068,6 +1112,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def getmergerequestcomments(self, project_id, mergerequest_id, page=1, per_page=20):
         """Get comments of a merge request.
 
@@ -1085,6 +1130,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def createmergerequest(self, project_id, sourcebranch, targetbranch,
                            title, target_project_id=None, assignee_id=None):
         """Create a new merge request.
@@ -1110,6 +1156,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def updatemergerequest(self, project_id, mergerequest_id, **kwargs):
         """Update an existing merge request.
 
@@ -1143,7 +1190,8 @@ class Gitlab(object):
         :param merge_commit_message: Custom merge commit message
         :return: dict of the modified merge request
         """
-
+        if isinstance(project_id, basestring):
+            project_id = quote_plus(project_id)
         data = {'merge_commit_message': merge_commit_message}
 
         request = requests.put('{0}/{1}/merge_request/{2}/merge'.format(self.projects_url, project_id, mergerequest_id),
@@ -1161,6 +1209,8 @@ class Gitlab(object):
         :param note: Text of comment
         :return: True if success
         """
+        if isinstance(project_id, basestring):
+            project_id = quote_plus(project_id)
         request = requests.post(
             '{0}/{1}/merge_request/{2}/comments'.format(self.projects_url, project_id, mergerequest_id),
             data={'note': note}, headers=self.headers, verify=self.verify_ssl)
@@ -1171,6 +1221,7 @@ class Gitlab(object):
 
             return False
 
+    @urlencode_strings
     def getsnippets(self, project_id, page=1, per_page=20):
         """Get all the snippets of the project identified by project_id
 
@@ -1185,6 +1236,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getsnippet(self, project_id, snippet_id):
         """Get one snippet from a project
 
@@ -1209,6 +1261,8 @@ class Gitlab(object):
         :param lifetime: expiration date
         :return: True if correct, false if failed
         """
+        if isinstance(project_id, basestring):
+            project_id = quote_plus(project_id)
         data = {"id": project_id, "title": title, "file_name": file_name, "code": code}
         if lifetime != "":
             data["lifetime"] = lifetime
@@ -1219,6 +1273,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getsnippetcontent(self, project_id, snippet_id):
         """Get raw content of a given snippet
 
@@ -1233,6 +1288,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def deletesnippet(self, project_id, snippet_id):
         """Deletes a given snippet
 
@@ -1247,6 +1303,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getrepositories(self, project_id, page=1, per_page=20):
         """Gets all repositories for a project id
 
@@ -1261,6 +1318,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getrepositorybranch(self, project_id, branch):
         """Get a single project repository branch.
 
@@ -1279,6 +1337,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def protectrepositorybranch(self, project_id, branch):
         """Protects a single project repository branch. This is an idempotent function,
         protecting an already protected repository branch still returns a 200 OK status code.
@@ -1294,6 +1353,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def unprotectrepositorybranch(self, project_id, branch):
         """Unprotects a single project repository branch. This is an idempotent function,
         unprotecting an already unprotected repository branch still returns a 200 OK status code.
@@ -1309,6 +1369,7 @@ class Gitlab(object):
         else:
             return
 
+    @urlencode_strings
     def getrepositorytags(self, project_id, page=1, per_page=20):
         """Get a list of repository tags from a project, sorted by name in reverse alphabetical order.
 
@@ -1332,7 +1393,8 @@ class Gitlab(object):
         :param message: message
         :return: dict
         """
-
+        if isinstance(project_id, basestring):
+            project_id = quote_plus(project_id)
         data = {"id": project_id, "tag_name": tag_name, "ref": ref, "message": message}
         request = requests.post("{0}/{1}/repository/tags".format(self.projects_url, project_id), data=data,
                                 verify=self.verify_ssl, headers=self.headers)
@@ -1342,6 +1404,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getrepositorycommits(self, project_id, ref_name=None, page=1, per_page=20):
         """Get a list of repository commits in a project.
 
@@ -1359,6 +1422,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getrepositorycommit(self, project_id, sha1):
         """Get a specific commit identified by the commit hash or name of a branch or tag.
 
@@ -1373,6 +1437,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getrepositorycommitdiff(self, project_id, sha1):
         """Get the diff of a commit in a project
 
@@ -1387,6 +1452,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getrepositorytree(self, project_id, **kwargs):
         """Get a list of repository files and directories in a project.
 
@@ -1414,6 +1480,8 @@ class Gitlab(object):
         :param filepath: The path the file
         :return: raw file contents
         """
+        if isinstance(project_id, basestring):
+            project_id = quote_plus(project_id)
         data = {"filepath": filepath}
         request = requests.get("{0}/{1}/repository/blobs/{2}".format(self.projects_url, project_id, sha1),
                                params=data, verify=self.verify_ssl,
@@ -1423,6 +1491,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getrawblob(self, project_id, sha1):
         """Get the raw file contents for a blob by blob SHA.
 
@@ -1437,6 +1506,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getcontributors(self, project_id, page=1, per_page=20):
         """Get repository contributors list
 
@@ -1451,6 +1521,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def compare_branches_tags_commits(self, project_id, from_id, to_id):
         """Compare branches, tags or commits
 
@@ -1491,6 +1562,8 @@ class Gitlab(object):
         :param filepath: path to save the file to
         :return: True if the file was saved to the filepath
         """
+        if isinstance(project_id, basestring):
+            project_id = quote_plus(project_id)
         request = requests.get("{0}/{1}/repository/archive".format(self.projects_url, project_id),
                                verify=self.verify_ssl, headers=self.headers)
         if request.status_code == 200:
@@ -1576,6 +1649,7 @@ class Gitlab(object):
         if request.status_code == 200:
             return True  # It always returns true
 
+    @urlencode_strings
     def getissuewallnotes(self, project_id, issue_id, page=1, per_page=20):
         """Get the notes from the wall of a issue
 
@@ -1589,6 +1663,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getissuewallnote(self, project_id, issue_id, note_id):
         """Get one note from the wall of the issue
 
@@ -1605,6 +1680,8 @@ class Gitlab(object):
         """Create a new note
 
         """
+        if isinstance(project_id, basestring):
+            project_id = quote_plus(project_id)
         data = {"body": content}
         request = requests.post("{0}/{1}/issues/{2}/notes".format(self.projects_url, project_id, issue_id),
                                 verify=self.verify_ssl, headers=self.headers, data=data)
@@ -1614,6 +1691,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getsnippetwallnotes(self, project_id, snippet_id, page=1, per_page=20):
         """Get the notes from the wall of a snippet
 
@@ -1627,6 +1705,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getsnippetwallnote(self, project_id, snippet_id, note_id):
         """Get one note from the wall of the snippet
 
@@ -1643,6 +1722,8 @@ class Gitlab(object):
         """Create a new note
 
         """
+        if isinstance(project_id, basestring):
+            project_id = quote_plus(project_id)
         data = {"body": content}
         request = requests.post("{0}/{1}/snippets/{2}/notes".format(self.projects_url, project_id, snippet_id),
                                 verify=self.verify_ssl, headers=self.headers, data=data)
@@ -1652,6 +1733,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getmergerequestwallnotes(self, project_id, merge_request_id, page=1, per_page=20):
         """Get the notes from the wall of a merge request
 
@@ -1665,6 +1747,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getmergerequestwallnote(self, project_id, merge_request_id, note_id):
         """Get one note from the wall of the merge request
 
@@ -1682,6 +1765,8 @@ class Gitlab(object):
         """Create a new note
 
         """
+        if isinstance(project_id, basestring):
+            project_id = quote_plus(project_id)
         data = {"body": content}
         request = requests.post("{0}/{1}/merge_requests/{2}/notes".format(self.projects_url, project_id, merge_request_id),
                                 verify=self.verify_ssl, headers=self.headers, data=data)
@@ -1701,6 +1786,8 @@ class Gitlab(object):
         :param commit_message: Commit message
         :return: true if success, false if not
         """
+        if isinstance(project_id, basestring):
+            project_id = quote_plus(project_id)
         data = {"file_path": file_path, "branch_name": branch_name,
                 "content": content, "commit_message": commit_message}
         request = requests.post("{0}/{1}/repository/files".format(self.projects_url, project_id),
@@ -1720,6 +1807,8 @@ class Gitlab(object):
         :param commit_message: Commit message
         :return: true if success, false if not
         """
+        if isinstance(project_id, basestring):
+            project_id = quote_plus(project_id)
         data = {"file_path": file_path, "branch_name": branch_name,
                 "content": content, "commit_message": commit_message}
         request = requests.put("{0}/{1}/repository/files".format(self.projects_url, project_id),
@@ -1739,6 +1828,8 @@ class Gitlab(object):
         :param ref: The name of branch, tag or commit
         :return:
         """
+        if isinstance(project_id, basestring):
+            project_id = quote_plus(project_id)
         data = {"file_path": file_path, "ref": ref}
         request = requests.get("{0}/{1}/repository/files".format(self.projects_url, project_id),
                                headers=self.headers, data=data, verify=self.verify_ssl)
@@ -1756,6 +1847,8 @@ class Gitlab(object):
         :param commit_message: Commit message
         :return: true if success, false if not
         """
+        if isinstance(project_id, basestring):
+            project_id = quote_plus(project_id)
         data = {"file_path": file_path, "branch_name": branch_name,
                 "commit_message": commit_message}
         request = requests.delete("{0}/{1}/repository/files".format(self.projects_url, project_id),
@@ -1766,6 +1859,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def setgitlabciservice(self, project_id, token, project_url):
         """Set GitLab CI service for project
 
@@ -1783,6 +1877,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def deletegitlabciservice(self, project_id, token, project_url):
         """Delete GitLab CI service settings
 
@@ -1796,6 +1891,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def getlabels(self, project_id):
         """Get all labels for given project.
 
@@ -1810,6 +1906,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def createlabel(self, project_id, name, color):
         """Creates a new label for given repository with given name and color.
 
@@ -1827,6 +1924,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def deletelabel(self, project_id, name):
         """Deletes a label given by its name.
 
@@ -1844,6 +1942,7 @@ class Gitlab(object):
         else:
             return False
 
+    @urlencode_strings
     def editlabel(self, project_id, name, new_name=None, color=None):
         """Updates an existing label with new name or now color. At least one parameter is required, to update the label.
 
