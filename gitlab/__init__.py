@@ -1127,24 +1127,28 @@ class Gitlab(object):
             return False
 
     def createmergerequest(self, project_id, sourcebranch, targetbranch,
-                           title, target_project_id=None, assignee_id=None):
+                           title, target_project_id=None, assignee_id=None, description=None):
         """Create a new merge request.
 
         :param project_id: ID of the project originating the merge request
         :param sourcebranch: name of the branch to merge from
         :param targetbranch: name of the branch to merge to
         :param title: Title of the merge request
+        :param target_project_id: The target project (numeric id)
         :param assignee_id: Assignee user ID
+        :param description : Description of MR
         :return: dict of the new merge request
         """
         data = {'source_branch': sourcebranch,
                 'target_branch': targetbranch,
-                'title': title,
                 'assignee_id': assignee_id,
+                'title': title,
+                'description' : description,
                 'target_project_id': target_project_id}
 
         request = requests.post('{0}/{1}/merge_requests'.format(self.projects_url, project_id),
                                 data=data, headers=self.headers, verify=self.verify_ssl)
+
         if request.status_code == 201:
             return request.json()
         else:
