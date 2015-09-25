@@ -40,11 +40,13 @@ class Gitlab(object):
             self.host = 'https://' + self.host
 
         self.api_url = self.host + "/api/v3"
+        self.namespaces_url = self.api_url + "/namespaces"
         self.projects_url = self.api_url + "/projects"
         self.users_url = self.api_url + "/users"
         self.keys_url = self.api_url + "/user/keys"
         self.groups_url = self.api_url + "/groups"
         self.search_url = self.api_url + "/projects/search"
+        self.search_namespaces_url = self.api_url + "/namespaces?search="
         self.hook_url = self.api_url + "/hooks"
         self.verify_ssl = verify_ssl
 
@@ -255,6 +257,20 @@ class Gitlab(object):
             return False
         else:
             return True
+
+    def getnamespaces(self, page=1, per_page=20):
+        """Returns a dictionary of all namespaces
+
+        :return: list with the path, kind, and id
+        """
+        data = {'page': page, 'per_page': per_page}
+
+        request = requests.get(self.namespaces_url, params=data,
+                               headers=self.headers, verify=self.verify_ssl)
+        if request.status_code == 200:
+            return request.json()
+        else:
+            return False
 
     def getprojects(self, page=1, per_page=20):
         """Returns a dictionary of all the projects
@@ -1495,6 +1511,21 @@ class Gitlab(object):
         request = requests.get("{0}/{1}/repository/compare".format(self.projects_url, project_id),
                                params=data, verify=self.verify_ssl,
                                headers=self.headers)
+
+        if request.status_code == 200:
+            return request.json()
+        else:
+            return False
+
+    def searchnamespace(self, search, page=1, per_page=20):
+        """Search namespaces by name
+
+        :param search: query to search for
+        :return: list of results
+        """
+        data = {'page': page, 'per_page': per_page}
+        request = requests.get("{0}{1}".format(self.search_namespaces_url, search), params=data,
+                               verify=self.verify_ssl, headers=self.headers)
 
         if request.status_code == 200:
             return request.json()
