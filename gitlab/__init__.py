@@ -417,6 +417,21 @@ class Gitlab(object):
         else:
             return False
 
+    def shareproject(self, project_id, group_id, group_access):
+        """Allow to share project with group.
+
+        :param project_id: The ID of a project
+        :param group_id: The ID of a group
+        :param group_access: Level of permissions for sharing
+        :return: True is success
+        """
+        data = {"id": project_id, "group_id": group_id,
+            "group_access": group_access}
+
+        request = requests.post("{0}/{1}/share".format(self.projects_url, project_id),
+                                            headers=self.headers, data=data, verify=self.verify_ssl)
+        return request.status_code == 201
+
 
     def deleteproject(self, project_id):
         """Delete a project
