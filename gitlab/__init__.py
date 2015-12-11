@@ -6,7 +6,6 @@ Check the license on the LICENSE file
 """
 
 import requests
-import json
 from . import exceptions
 try:
     from urllib import quote_plus
@@ -89,7 +88,7 @@ class Gitlab(object):
         else:
             self.headers["SUDO"] = user
 
-    def getusers(self, search=None, page=1, per_page=20):
+    def getusers(self, search=None, page=0, per_page=20):
         """Return a user list
 
         :param search: Optional search query
@@ -257,7 +256,7 @@ class Gitlab(object):
         else:
             return True
 
-    def getprojects(self, page=1, per_page=20):
+    def getprojects(self, page=0, per_page=20):
         """Returns a dictionary of all the projects
 
         :return: list with the repo name, description, last activity,web url, ssh url, owner and if its public
@@ -271,7 +270,7 @@ class Gitlab(object):
         else:
             return False
 
-    def getprojectsall(self, page=1, per_page=20):
+    def getprojectsall(self, page=0, per_page=20):
         """Returns a dictionary of all the projects for admins only
 
         :return: list with the repo name, description, last activity,web url, ssh url, owner and if its public
@@ -285,7 +284,7 @@ class Gitlab(object):
         else:
             return False
 
-    def getprojectsowned(self, page=1, per_page=20):
+    def getprojectsowned(self, page=0, per_page=20):
         """Returns a dictionary of all the projects for the current user
 
         :return: list with the repo name, description, last activity, web url, ssh url, owner and if its public
@@ -314,7 +313,7 @@ class Gitlab(object):
         else:
             return False
 
-    def getprojectevents(self, project_id, page=1, per_page=20):
+    def getprojectevents(self, project_id, page=0, per_page=20):
         """Get the project identified by id, events(commits)
 
         :param project_id: id of the project
@@ -435,7 +434,7 @@ class Gitlab(object):
 
             return False
 
-    def getprojectmembers(self, project_id, query=None, page=1, per_page=20):
+    def getprojectmembers(self, project_id, query=None, page=0, per_page=20):
         """Lists the members of a given project id
 
         :param project_id: the project id
@@ -519,7 +518,7 @@ class Gitlab(object):
         if request.status_code == 200:
             return True  # It always returns true
 
-    def getprojecthooks(self, project_id, page=1, per_page=20):
+    def getprojecthooks(self, project_id, page=0, per_page=20):
         """Get all the hooks from a project
 
         :param project_id: project id
@@ -601,7 +600,7 @@ class Gitlab(object):
         else:
             return False
 
-    def getsystemhooks(self, page=1, per_page=20):
+    def getsystemhooks(self, page=0, per_page=20):
         """Get all system hooks
 
         :return: list of hooks
@@ -785,7 +784,7 @@ class Gitlab(object):
         else:
             return False
 
-    def getissues(self, page=1, per_page=20):
+    def getissues(self, page=0, per_page=20):
         """Return a global list of issues for your user.
 
         :return: list of issues
@@ -799,7 +798,7 @@ class Gitlab(object):
         else:
             return False
 
-    def getprojectissues(self, project_id, page=1, per_page=20, **kwargs):
+    def getprojectissues(self, project_id, page=0, per_page=20, **kwargs):
         """Return a list of issues for project id.
 
         :param: project_id: The id for the project.
@@ -864,7 +863,7 @@ class Gitlab(object):
         else:
             return False
 
-    def getmilestones(self, project_id, page=1, per_page=20):
+    def getmilestones(self, project_id, page=0, per_page=20):
         """Get the milestones for a project
 
         :param project_id: project id
@@ -936,7 +935,7 @@ class Gitlab(object):
         else:
             return False
 
-    def getmilestoneissues(self, project_id, milestone_id, page=1, per_page=20):
+    def getmilestoneissues(self, project_id, milestone_id, page=0, per_page=20):
         """Get the issues associated with a milestone
 
         :param project_id: project id
@@ -1031,7 +1030,7 @@ class Gitlab(object):
             msg = request.json()['message']
             raise exceptions.HttpError(msg)
 
-    def getgroups(self, group_id=None, page=1, per_page=20):
+    def getgroups(self, group_id=None, page=0, per_page=20):
         """Retrieve group information
 
         :param group_id: Specify a group. Otherwise, all groups are returned
@@ -1064,7 +1063,7 @@ class Gitlab(object):
         else:
             return False
 
-    def getmergerequests(self, project_id, page=1, per_page=20, state=None):
+    def getmergerequests(self, project_id, page=0, per_page=20, state=None):
         """Get all the merge requests for a project.
 
         :param project_id: ID of the project to retrieve merge requests for
@@ -1096,7 +1095,7 @@ class Gitlab(object):
         else:
             return False
 
-    def getmergerequestcomments(self, project_id, mergerequest_id, page=1, per_page=20):
+    def getmergerequestcomments(self, project_id, mergerequest_id, page=0, per_page=20):
         """Get comments of a merge request.
 
         :param project_id: ID of the project
@@ -1207,7 +1206,7 @@ class Gitlab(object):
 
         return request.status_code == 201
 
-    def getsnippets(self, project_id, page=1, per_page=20):
+    def getsnippets(self, project_id, page=0, per_page=20):
         """Get all the snippets of the project identified by project_id
 
         :param project_id: project id to get the snippets from
@@ -1280,7 +1279,7 @@ class Gitlab(object):
                                   headers=self.headers, verify=self.verify_ssl, auth=self.auth)
         return request.status_code == 200
 
-    def getrepositories(self, project_id, page=1, per_page=20):
+    def getrepositories(self, project_id, page=0, per_page=20):
         """Gets all repositories for a project id
 
         :param project_id: project id
@@ -1342,7 +1341,7 @@ class Gitlab(object):
         else:
             return
 
-    def getrepositorytags(self, project_id, page=1, per_page=20):
+    def getrepositorytags(self, project_id, page=0, per_page=20):
         """Get a list of repository tags from a project, sorted by name in reverse alphabetical order.
 
         :param project_id: project id
@@ -1375,7 +1374,7 @@ class Gitlab(object):
         else:
             return False
 
-    def getrepositorycommits(self, project_id, ref_name=None, page=1, per_page=20):
+    def getrepositorycommits(self, project_id, ref_name=None, page=0, per_page=20):
         """Get a list of repository commits in a project.
 
         :param project_id: The ID of a project
@@ -1470,7 +1469,7 @@ class Gitlab(object):
         else:
             return False
 
-    def getcontributors(self, project_id, page=1, per_page=20):
+    def getcontributors(self, project_id, page=0, per_page=20):
         """Get repository contributors list
 
         :param: project_id: The ID of a project
@@ -1502,7 +1501,7 @@ class Gitlab(object):
         else:
             return False
 
-    def searchproject(self, search, page=1, per_page=20):
+    def searchproject(self, search, page=0, per_page=20):
         """Search for projects by name which are accessible to the authenticated user
 
         :param search: query to search for
@@ -1548,7 +1547,7 @@ class Gitlab(object):
                                   headers=self.headers, verify=self.verify_ssl, auth=self.auth)
         return request.status_code == 200
 
-    def getgroupmembers(self, group_id, page=1, per_page=20):
+    def getgroupmembers(self, group_id, page=0, per_page=20):
         """Lists the members of a given group id
 
         :param group_id: the group id
@@ -1631,7 +1630,7 @@ class Gitlab(object):
         if request.status_code == 200:
             return True  # It always returns true
 
-    def getissuewallnotes(self, project_id, issue_id, page=1, per_page=20):
+    def getissuewallnotes(self, project_id, issue_id, page=0, per_page=20):
         """Get the notes from the wall of a issue
 
         """
@@ -1669,7 +1668,7 @@ class Gitlab(object):
         else:
             return False
 
-    def getsnippetwallnotes(self, project_id, snippet_id, page=1, per_page=20):
+    def getsnippetwallnotes(self, project_id, snippet_id, page=0, per_page=20):
         """Get the notes from the wall of a snippet
 
         """
@@ -1707,7 +1706,7 @@ class Gitlab(object):
         else:
             return False
 
-    def getmergerequestwallnotes(self, project_id, merge_request_id, page=1, per_page=20):
+    def getmergerequestwallnotes(self, project_id, merge_request_id, page=0, per_page=20):
         """Get the notes from the wall of a merge request
 
         """
