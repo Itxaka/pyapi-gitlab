@@ -817,8 +817,9 @@ class Gitlab(object):
         :return: True if succeed
         """
 
+        private_token = self.currentuser()['private_token']
         request = requests.post("{0}/fork/{1}".format(self.projects_url, project_id),
-                                timeout=self.timeout, verify=self.verify_ssl)
+                                headers={"PRIVATE-TOKEN": private_token}, timeout=self.timeout, verify=self.verify_ssl)
 
         if request.status_code == 200:
             return True
