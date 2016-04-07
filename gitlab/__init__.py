@@ -337,7 +337,18 @@ class Gitlab(object):
             return request.json()
         else:
             return False
+     def getprojectsofgroup(self, group_id):
+        """Get all projects of a group
 
+        :param group_id: id of the group
+        :return: False if not found, a dictionary if found
+        """
+        request = requests.get("{0}/{1}/projects".format(self.groups_url, group_id),
+                                headers = self.headers, verify = self.verify_ssl, auth = self.auth, timeout=self.timeout)
+        if request.status_code == 200:
+            return request.josn()
+        else:
+            return False
     def getprojectevents(self, project_id, page=1, per_page=20):
         """Get the project identified by id, events(commits)
 
