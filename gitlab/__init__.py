@@ -880,7 +880,30 @@ class Gitlab(object):
             return request.json()
         else:
             return False
+    def getopenprojectissue(self, project_id):
+        """Get all opened issues from a project
 
+        :param project_id: project id
+        :return: the opened issue
+        """
+        request = requests.get("{0}/{1}/issues?state=opened".format(self.projects_url, project_id),
+                               headers=self.headers, verify=self.verify_ssl, auth=self.auth, timeout=self.timeout)
+        if request.status_code == 200:
+            return request.json()
+        else:
+            return False
+    def getcloseprojectissue(self, project_id):
+        """Get all closed issues from a project
+
+        :param project_id: project id
+        :return: the closed issue
+        """
+        request = requests.get("{0}/{1}/issues?state=closed".format(self.projects_url, project_id),
+                               headers=self.headers, verify=self.verify_ssl, auth=self.auth, timeout=self.timeout)
+        if request.status_code == 200:
+            return request.json()
+        else:
+            return False
     def createissue(self, project_id, title, **kwargs):
         """Create a new issue
 
