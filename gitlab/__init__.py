@@ -914,7 +914,19 @@ class Gitlab(object):
             return request.json()
         else:
             return False
+    def deleteissue(self, project_id, issue_id):
+        """Delete an existing issue data
 
+        :param project_id: project id
+        :param issue_id: issue id
+        :return: true if success
+        """
+        request = requests.delete("{0}/{1}/issues/{2}".format(self.projects_url, project_id, issue_id),
+                               headers=self.headers, verify=self.verify_ssl, auth=self.auth, timeout=self.timeout)
+        if request.status_code == 200:
+            return request.json()
+        else:
+            return False 
     def getmilestones(self, project_id, page=1, per_page=20):
         """Get the milestones for a project
 
