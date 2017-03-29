@@ -590,11 +590,16 @@ class Gitlab(object):
         else:
             return False
 
-    def addprojecthook(self, project_id, url, push=False, issues=False, merge_requests=False, tag_push=False):
-        """
-        add a hook to a project
+    def addprojecthook(self, project_id, url, push=False, issues=False, merge_requests=False, tag_push=False, **kwargs):
+        """Add a hook to a project
+
         :param id_: project id
         :param url: url of the hook
+        :param push: Trigger hook on push events
+        :param issues: Trigger hook on issues events
+        :param merge_requests: Trigger hook on merge_requests events
+        :param tag_push:  Trigger hook on push_tag events
+        :param kwargs: Any other param the the Gitlab API supports
         :return: True if success
         """
         data = {"id": project_id, "url": url}
@@ -602,6 +607,10 @@ class Gitlab(object):
         data['issues_events'] = int(bool(issues))
         data['merge_requests_events'] = int(bool(merge_requests))
         data['tag_push_events'] = int(bool(tag_push))
+        if kwargs:
+            for key, value in kwargs.iteritems():
+                data[key] = int(bool(value))
+
         request = requests.post("{0}/{1}/hooks".format(self.projects_url, project_id),
                                 headers=self.headers, data=data, verify=self.verify_ssl, auth=self.auth, timeout=self.timeout)
         if request.status_code == 201:
@@ -610,12 +619,17 @@ class Gitlab(object):
             return False
 
     def editprojecthook(self, project_id, hook_id, url, push=False,
-            issues=False, merge_requests=False, tag_push=False):
-        """
-        edit an existing hook from a project
+            issues=False, merge_requests=False, tag_push=False, **kwargs):
+        """Edit an existing hook from a project
+
         :param id_: project id
         :param hook_id: hook id
         :param url: the new url
+        :param push: Trigger hook on push events
+        :param issues: Trigger hook on issues events
+        :param merge_requests: Trigger hook on merge_requests events
+        :param tag_push:  Trigger hook on push_tag events
+        :param kwargs: Any other param the the Gitlab API supports
         :return: True if success
         """
         data = {"id": project_id, "hook_id": hook_id, "url": url}
@@ -623,6 +637,10 @@ class Gitlab(object):
         data['issues_events'] = int(bool(issues))
         data['merge_requests_events'] = int(bool(merge_requests))
         data['tag_push_events'] = int(bool(tag_push))
+        if kwargs:
+            for key, value in kwargs.iteritems():
+                data[key] = int(bool(value))
+
         request = requests.put("{0}/{1}/hooks/{2}".format(self.projects_url, project_id, hook_id),
                                headers=self.headers, data=data, verify=self.verify_ssl, auth=self.auth, timeout=self.timeout)
         if request.status_code == 200:
