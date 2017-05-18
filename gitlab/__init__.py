@@ -520,7 +520,18 @@ class Gitlab(object):
             return self.get_project(project_id)
         except exceptions.HttpError:
             return False
+     def getprojectsofgroup(self, group_id):
+        """Get all projects of a group
 
+        :param group_id: id of the group
+        :return: False if not found, a dictionary if found
+        """
+        request = requests.get("{0}/{1}/projects".format(self.groups_url, group_id),
+                                headers = self.headers, verify = self.verify_ssl, auth = self.auth, timeout=self.timeout)
+        if request.status_code == 200:
+            return request.josn()
+        else:
+            return False
     def getprojectevents(self, project_id, page=1, per_page=20):
         """
         Get the project identified by id, events(commits)
@@ -1175,7 +1186,30 @@ class Gitlab(object):
             return request.json()
         else:
             return False
+    def getopenprojectissue(self, project_id):
+        """Get all opened issues from a project
 
+        :param project_id: project id
+        :return: the opened issue
+        """
+        request = requests.get("{0}/{1}/issues?state=opened".format(self.projects_url, project_id),
+                               headers=self.headers, verify=self.verify_ssl, auth=self.auth, timeout=self.timeout)
+        if request.status_code == 200:
+            return request.json()
+        else:
+            return False
+    def getcloseprojectissue(self, project_id):
+        """Get all closed issues from a project
+
+        :param project_id: project id
+        :return: the closed issue
+        """
+        request = requests.get("{0}/{1}/issues?state=closed".format(self.projects_url, project_id),
+                               headers=self.headers, verify=self.verify_ssl, auth=self.auth, timeout=self.timeout)
+        if request.status_code == 200:
+            return request.json()
+        else:
+            return False
     def createissue(self, project_id, title, **kwargs):
         """
         Create a new issue
@@ -1215,7 +1249,19 @@ class Gitlab(object):
             return request.json()
         else:
             return False
+    def deleteissue(self, project_id, issue_id):
+        """Delete an existing issue data
 
+        :param project_id: project id
+        :param issue_id: issue id
+        :return: true if success
+        """
+        request = requests.delete("{0}/{1}/issues/{2}".format(self.projects_url, project_id, issue_id),
+                               headers=self.headers, verify=self.verify_ssl, auth=self.auth, timeout=self.timeout)
+        if request.status_code == 200:
+            return request.json()
+        else:
+            return False 
     def getmilestones(self, project_id, page=1, per_page=20):
         """
         Get the milestones for a project
