@@ -1941,6 +1941,20 @@ class Gitlab(object):
         else:
             return False
 
+    def getrepositorycommitcomments(self, project_id, sha1): 
+        """Get the comments of a commit in a project
+
+        :param project_id: The ID of a project
+        :param sha1: The name of a repository branch or tag or if not given the default branch.
+        :return: dict of commit 
+        """
+        request = requests.get("{0}/{1}/repository/commits/{2}/comments".format(self.projects_url, project_id, sha1),
+                                verify=self.verify_ssl, auth=self.auth, headers=self.headers, timeout=self.timeout)
+        if request.status_code == 200:
+            return request.json()
+        else:
+            return False
+
     def getrepositorycommitdiff(self, project_id, sha1):
         """
         Get the diff of a commit in a project
