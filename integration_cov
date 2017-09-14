@@ -1,2 +1,3 @@
 #!/usr/bin/env bash
-coverage run -m unittest discover -s integration_tests.tests_$1 && coverage html
+/usr/local/bin/python -m docker
+coverage run -m unittest discover -s integration_tests.tests_v93 && coverage html

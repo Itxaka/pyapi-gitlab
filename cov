@@ -1,2 +1,3 @@
 #!/usr/bin/env bash
+export PYTHONWARNINGS=$1
 coverage run -m unittest discover -s gitlab_tests && coverage html

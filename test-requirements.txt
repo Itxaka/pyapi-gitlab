@@ -1,4 +1,4 @@
 -r requirements.txt
 responses
 coverage
-sphinx
+mock

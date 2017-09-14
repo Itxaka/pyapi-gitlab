@@ -1,7 +1,7 @@
 import responses
+from requests.exceptions import HTTPError
 
-from gitlab.exceptions import HttpError
-from gitlab_tests.base import BaseTest
+from gitlab_tests.base_test import BaseTest
 from response_data.projects import *
 
 
@@ -39,7 +39,9 @@ class TestDeleteProject(BaseTest):
             status=404,
             content_type='application/json')
 
-        self.assertRaises(HttpError, self.gitlab.delete_project, 1)
+        self.gitlab.suppress_http_error = False
+        self.assertRaises(HTTPError, self.gitlab.delete_project, 1)
+        self.gitlab.suppress_http_error = True
         self.assertEqual(True, self.gitlab.deleteproject(1))
 
 
@@ -65,5 +67,7 @@ class TestGetProject(BaseTest):
             status=404,
             content_type='application/json')
 
-        self.assertRaises(HttpError, self.gitlab.get_project, 1)
+        self.gitlab.suppress_http_error = False
+        self.assertRaises(HTTPError, self.gitlab.get_project, 1)
+        self.gitlab.suppress_http_error = True
         self.assertFalse(self.gitlab.getproject(1))

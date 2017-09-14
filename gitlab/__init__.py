@@ -4,199 +4,30 @@ pyapi-gitlab, a gitlab python wrapper for the gitlab API
 by Itxaka Serrano Garcia <itxakaserrano@gmail.com>
 Check the license on the LICENSE file
 """
-from json import JSONDecodeError
-
 import requests
 
 from . import exceptions
+from .session import Session
+from .users import Users
+from .keys import Keys
+from .helper import deprecated, format_string
 
-from six.moves.urllib.parse import quote_plus
 
-
-class Gitlab(object):
+class Gitlab(Session, Users, Keys):
     """
     Gitlab class
+
+    On init we setup the token used for all the api calls and all the urls
+
+    :param host: host of gitlab
+    :param token: token
+    :param verify_ssl: Weather or not to verify the SSL cert
+    :param auth: Authentication
+    :param timeout: Timeout
+    :param suppress_http_error: Use :obj:`False` to unsuppress
+        :class:`requests.exceptions.HTTPError` exceptions on failure
+    :return: None
     """
-    def __init__(self, host, token="", oauth_token="", verify_ssl=True, auth=None, timeout=None):
-        """
-        On init we setup the token used for all the api calls and all the urls
-
-        :param host: host of gitlab
-        :param token: token
-        """
-        if token is not '':
-            self.token = token
-            self.headers = {'PRIVATE-TOKEN': self.token}
-
-        if oauth_token is not "":
-            self.oauth_token = oauth_token
-            self.headers = {'Authorization': 'Bearer {}'.format(
-                self.oauth_token)}
-
-        if not host:
-            raise ValueError('host argument may not be empty')
-
-        self.host = host.rstrip('/')
-
-        if self.host.startswith('http://') or self.host.startswith('https://'):
-            pass
-        else:
-            self.host = 'https://' + self.host
-
-        self.auth = auth
-        self.api_url = self.host + '/api/v3'
-        self.projects_url = self.api_url + '/projects'
-        self.users_url = self.api_url + '/users'
-        self.keys_url = self.api_url + '/user/keys'
-        self.groups_url = self.api_url + '/groups'
-        self.search_url = self.api_url + '/projects/search'
-        self.hook_url = self.api_url + '/hooks'
-        self.namespaces_url = self.api_url + '/namespaces'
-        self.verify_ssl = verify_ssl
-        self.timeout = timeout
-
-    def get(self, uri, default_response=None, **kwargs):
-        """
-        Call GET on the Gitlab server
-
-        >>> gitlab = Gitlab(host='http://localhost:10080', verify_ssl=False)
-        >>> gitlab.login(user='root', password='5iveL!fe')
-        >>> gitlab.get('/users/5')
-
-        :param uri: String with the URI for the endpoint to GET from
-        :param default_response: Return value if JSONDecodeError
-        :param kwargs: Key word arguments to use as GET arguments
-        :return: Dictionary containing response data
-        :raise: HttpError: If invalid response returned
-        """
-        if default_response is None:
-            default_response = {}
-
-        url = self.api_url + uri
-        response = requests.get(url, params=kwargs, headers=self.headers,
-                                verify=self.verify_ssl, auth=self.auth,
-                                timeout=self.timeout)
-
-        return self.success_or_raise(response, [200], default_response=default_response)
-
-    def post(self, uri, default_response=None, **kwargs):
-        """
-        Call POST on the Gitlab server
-
-        >>> gitlab = Gitlab(host='http://localhost:10080', verify_ssl=False)
-        >>> gitlab.login(user='root', password='5iveL!fe')
-        >>> password = 'MyTestPassword1'
-        >>> email = 'example@example.com'
-        >>> data = {'name': 'test', 'username': 'test1', 'password': password, 'email': email}
-        >>> gitlab.post('/users/5', **data)
-
-        :param uri: String with the URI for the endpoint to POST to
-        :param default_response: Return value if JSONDecodeError
-        :param kwargs: Key word arguments representing the data to use in the POST
-        :return: Dictionary containing response data
-        :raise: HttpError: If invalid response returned
-        """
-        if default_response is None:
-            default_response = {}
-
-        url = self.api_url + uri
-
-        response = requests.post(
-            url, headers=self.headers, data=kwargs,
-            verify=self.verify_ssl, auth=self.auth, timeout=self.timeout)
-
-        return self.success_or_raise(response, [201], default_response=default_response)
-
-    def delete(self, uri, default_response=None):
-        """
-        Call DELETE on the Gitlab server
-
-        >>> gitlab = Gitlab(host='http://localhost:10080', verify_ssl=False)
-        >>> gitlab.login(user='root', password='5iveL!fe')
-        >>> gitlab.delete('/users/5')
-
-        :param uri: String with the URI you wish to delete
-        :param default_response: Return value if JSONDecodeError
-        :return: Dictionary containing response data
-        :raise: HttpError: If invalid response returned
-        """
-        if default_response is None:
-            default_response = {}
-
-        url = self.api_url + uri
-        response = requests.delete(
-            url, headers=self.headers, verify=self.verify_ssl,
-            auth=self.auth, timeout=self.timeout)
-
-        return self.success_or_raise(
-            response, [204, 200], default_response=default_response)
-
-    @staticmethod
-    def _format_string(string):
-        """
-        Formats a string so its ready for Gitlab or returns an int
-        
-        :param string: String to be formatted
-        :return: Int or String
-        """
-        if isinstance(string, str):
-            return quote_plus(string)
-        return string
-
-    @staticmethod
-    def success_or_raise(response, status_codes, default_response=None):
-        """
-        Check if request was successful or raises an HttpError
-
-        :param response: Response Object to check
-        :param status_codes: List of Ints, Valid status codes to check for
-        :param default_response: Return value if JSONDecodeError
-        :return: Dictionary containing response data
-        :raise: HttpError: If invalid response returned
-        """
-        if default_response is None:
-            default_response = {}
-
-        if response.status_code in status_codes:
-            try:
-                return response.json()
-            except JSONDecodeError:
-                return default_response
-
-        raise exceptions.HttpError(
-            ('Something went wrong, '
-             'status code: {status_code}, '
-             'text response: {json}').format(
-                 status_code=response.status_code,
-                 json=response.text)
-            )
-
-    def login(self, email=None, password=None, user=None):
-        """
-        Logs the user in and setups the header with the private token
-
-        :param email: Gitlab user Email
-        :param user: Gitlab username
-        :param password: Gitlab user password
-        :return: True if login successful
-        :raise: HttpError
-        :raise: ValueError
-        """
-        if user is not None:
-            data = {'login': user, 'password': password}
-        elif email is not None:
-            data = {'email': email, 'password': password}
-        else:
-            raise ValueError('Neither username nor email provided to login')
-
-        self.headers = {'connection': 'close'}
-        response = self.post('/session', **data)
-
-        self.token = response['private_token']
-        self.headers = {'PRIVATE-TOKEN': self.token,
-                        'connection': 'close'}
-        return response
-
     def setsudo(self, user=None):
         """
         Set the subsequent API calls to the user provided
@@ -211,284 +42,6 @@ class Gitlab(object):
                 pass
         else:
             self.headers['SUDO'] = user
-
-    def get_users(self, search=None, page=1, per_page=20, **kwargs):
-        """
-        Returns a list of users from the Gitlab server
-
-        :param search: Optional search query
-        :param page: Page number (default: 1)
-        :param per_page: Number of items to list per page (default: 20, max: 100)
-        :return: List of Dictionaries containing users
-        :raise: HttpError if invalid response returned
-        """
-        if search:
-            return self.get('/users', page=page, per_page=per_page, search=search, **kwargs)
-
-        return self.get('/users', page=page, per_page=per_page, **kwargs)
-
-    def getusers(self, search=None, page=1, per_page=20, **kwargs):  # TODO: Add deprecated decorator
-        """
-        Returns a list of users from the Gitlab server
-
-        Warning this is being deprecated
-
-        :param search: Optional search query
-        :param page: Page number (default: 1)
-        :param per_page: Number of items to list per page (default: 20, max: 100)
-        :return: returns a dictionary of the users, false if there is an error
-        """
-        try:
-            return self.get_users(search=search, page=page, per_page=per_page, **kwargs)
-        except exceptions.HttpError:
-            return False
-
-    def getuser(self, user_id):
-        """
-        Get info for a user identified by id
-
-        :param user_id: id of the user
-        :return: False if not found, a dictionary if found
-        """
-        request = requests.get(
-            '{0}/{1}'.format(self.users_url, user_id),
-            headers=self.headers, verify=self.verify_ssl, auth=self.auth, timeout=self.timeout)
-
-        if request.status_code == 200:
-            return request.json()
-        else:
-            return False
-
-    def createuser(self, name, username, password, email, **kwargs):
-        """
-        Create a user
-
-        :param name: Obligatory
-        :param username: Obligatory
-        :param password: Obligatory
-        :param email: Obligatory
-        :param kwargs: Any param the the Gitlab API supports
-        :return: True if the user was created,false if it wasn't(already exists)
-        """
-        data = {'name': name, 'username': username, 'password': password, 'email': email}
-
-        if kwargs:
-            data.update(kwargs)
-
-        request = requests.post(
-            self.users_url, headers=self.headers, data=data,
-            verify=self.verify_ssl, auth=self.auth, timeout=self.timeout)
-
-        if request.status_code == 201:
-            return request.json()
-        elif request.status_code == 404:
-            return False
-
-    def delete_user(self, user):
-        """
-        Deletes a user. Available only for administrators.
-        This is an idempotent function, calling this function for a non-existent user id
-        still returns a status code 200 OK.
-        The JSON response differs if the user was actually deleted or not.
-        In the former the user is returned and in the latter not.
-
-        :param user: The ID of the user
-        :return: Empty Dict
-        :raise: HttpError: If invalid response returned
-        """
-        return self.delete('/users/{user}'.format(user=user), default_response={})
-
-    def deleteuser(self, user_id):  # TODO: Add deprecated decorator
-        """
-        Deletes a user. Available only for administrators.
-        This is an idempotent function, calling this function for a non-existent user id
-        still returns a status code 200 OK.
-        The JSON response differs if the user was actually deleted or not.
-        In the former the user is returned and in the latter not.
-
-        :param user_id: The ID of the user
-        :return: True if it deleted, False if it couldn't
-        """
-        try:
-            self.delete_user(user_id)
-            return True
-        except exceptions.HttpError:
-            return False
-
-    def currentuser(self):
-        """
-        Returns the current user parameters. The current user is linked to the secret token
-
-        :return: a list with the current user properties
-        """
-        request = requests.get(
-            '{0}/api/v3/user'.format(self.host),
-            headers=self.headers, verify=self.verify_ssl, auth=self.auth, timeout=self.timeout)
-
-        return request.json()
-
-    def edituser(self, user_id, **kwargs):
-        """
-        Edits an user data.
-
-        :param user_id: id of the user to change
-        :param kwargs: Any param the the Gitlab API supports
-        :return: Dict of the user
-        """
-        data = {}
-
-        if kwargs:
-            data.update(kwargs)
-
-        request = requests.put(
-            '{0}/{1}'.format(self.users_url, user_id),
-            headers=self.headers, data=data, timeout=self.timeout, verify=self.verify_ssl, auth=self.auth)
-
-        if request.status_code == 200:
-            return request.json()
-        else:
-            return False
-
-    def blockuser(self, user_id, **kwargs):
-        """
-        Block a user.
-
-        :param user_id: id of the user to change
-        :param kwargs: Any param the the Gitlab API supports
-        :return: Dict of the user
-        """
-        data = {}
-
-        if kwargs:
-            data.update(kwargs)
-
-        request = requests.put(
-            '{0}/{1}/block'.format(self.users_url, user_id),
-            headers=self.headers, data=data, timeout=self.timeout, verify=self.verify_ssl)
-
-        if request.status_code == 200:
-            return request.json()
-        else:
-            return False
-
-    def getsshkeys(self):
-        """
-        Gets all the ssh keys for the current user
-
-        :return: a dictionary with the lists
-        """
-        request = requests.get(
-            self.keys_url, headers=self.headers, verify=self.verify_ssl, auth=self.auth, timeout=self.timeout)
-
-        if request.status_code == 200:
-            return request.json()
-        else:
-            return False
-
-    def getsshkey(self, key_id):
-        """
-        Get a single ssh key identified by key_id
-
-        :param key_id: the id of the key
-        :return: the key itself
-        """
-        request = requests.get(
-            '{0}/{1}'.format(self.keys_url, key_id),
-            headers=self.headers, verify=self.verify_ssl, auth=self.auth, timeout=self.timeout)
-
-        if request.status_code == 200:
-            return request.json()
-        else:
-            return False
-
-    def addsshkey(self, title, key):
-        """
-        Add a new ssh key for the current user
-
-        :param title: title of the new key
-        :param key: the key itself
-        :return: true if added, false if it didn't add it (it could be because the name or key already exists)
-        """
-        data = {'title': title, 'key': key}
-
-        request = requests.post(
-            self.keys_url, headers=self.headers, data=data,
-            verify=self.verify_ssl, auth=self.auth, timeout=self.timeout)
-
-        if request.status_code == 201:
-            return True
-        else:
-            return False
-
-    def addsshkeyuser(self, user_id, title, key):
-        """
-        Add a new ssh key for the user identified by id
-
-        :param user_id: id of the user to add the key to
-        :param title: title of the new key
-        :param key: the key itself
-        :return: true if added, false if it didn't add it (it could be because the name or key already exists)
-        """
-        data = {'title': title, 'key': key}
-
-        request = requests.post(
-            '{0}/{1}/keys'.format(self.users_url, user_id), headers=self.headers,
-            data=data, verify=self.verify_ssl, auth=self.auth, timeout=self.timeout)
-
-        if request.status_code == 201:
-            return True
-        else:
-            return False
-
-    def deletesshkey(self, key_id):
-        """
-        Deletes an sshkey for the current user identified by id
-
-        :param key_id: the id of the key
-        :return: False if it didn't delete it, True if it was deleted
-        """
-        request = requests.delete(
-            '{0}/{1}'.format(self.keys_url, key_id), headers=self.headers,
-            verify=self.verify_ssl, auth=self.auth, timeout=self.timeout)
-
-        if request.content == b'null':
-            return False
-        else:
-            return True
-
-    def getprojects(self, page=1, per_page=20):
-        """
-        Returns a dictionary of all the projects
-
-        :return: list with the repo name, description, last activity,web url, ssh url, owner and if its public
-        """
-        data = {'page': page, 'per_page': per_page}
-
-        request = requests.get(
-            self.projects_url, params=data, headers=self.headers,
-            verify=self.verify_ssl, auth=self.auth, timeout=self.timeout)
-
-        if request.status_code == 200:
-            return request.json()
-        else:
-            return False
-
-    def getprojectsall(self, page=1, per_page=20):
-        """
-        Returns a dictionary of all the projects for admins only
-
-        :return: list with the repo name, description, last activity,web url, ssh url, owner and if its public
-        """
-        data = {'page': page, 'per_page': per_page}
-
-        request = requests.get(
-            '{0}/all'.format(self.projects_url), params=data, headers=self.headers,
-            verify=self.verify_ssl, auth=self.auth, timeout=self.timeout)
-
-        if request.status_code == 200:
-            return request.json()
-        else:
-            return False
 
     def getprojectsowned(self, page=1, per_page=20):
         """
@@ -515,7 +68,7 @@ class Gitlab(object):
         :return: Dictionary containing the Project
         :raise: HttpError: If invalid response returned
         """
-        project = self._format_string(project)
+        project = format_string(project)
 
         return self.get(
             '/projects/{project}'.format(project=project))
@@ -526,10 +79,7 @@ class Gitlab(object):
         :param project_id: id or namespace/project_name of the project
         :return: False if not found, a dictionary if found
         """
-        try:
-            return self.get_project(project_id)
-        except exceptions.HttpError:
-            return False
+        return self.get_project(project_id)
 
     def getprojectevents(self, project_id, page=1, per_page=20):
         """
@@ -654,19 +204,18 @@ class Gitlab(object):
         else:
             return response
 
-    def deleteproject(self, project_id):  # TODO: Add deprecated decorator
+    @deprecated
+    def deleteproject(self, project_id):
         """
         Delete a project
 
-        Warning this is being deprecated
+        .. warning:: Warning this is being deprecated please use :func:`gitlab.Gitlab.delete_project`
 
         :param project_id: project id
+        :type project_id: int
         :return: always true
         """
-        try:
-            self.delete_project(project_id)
-        except exceptions.HttpError:
-            pass
+        self.delete_project(project_id)
         return True
 
     def createprojectuser(self, user_id, name, **kwargs):
@@ -800,6 +349,8 @@ class Gitlab(object):
         """Get all the hooks from a project
 
         :param project_id: project id
+        :param page: Page number
+        :param per_page: Records per page
         :return: the hooks
         """
         data = {'page': page, 'per_page': per_page}
@@ -831,7 +382,8 @@ class Gitlab(object):
     def addprojecthook(self, project_id, url, push=False, issues=False, merge_requests=False, tag_push=False):
         """
         add a hook to a project
-        :param id_: project id
+
+        :param project_id: project id
         :param url: url of the hook
         :return: True if success
         """
@@ -902,6 +454,8 @@ class Gitlab(object):
         """
         Get all system hooks
 
+        :param page: Page number
+        :param per_page: Records per page
         :return: list of hooks
         """
         data = {'page': page, 'per_page': per_page}
@@ -1136,6 +690,8 @@ class Gitlab(object):
         """
         Return a global list of issues for your user.
 
+        :param page: Page number
+        :param per_page: Records per page
         :return: list of issues
         """
         data = {'page': page, 'per_page': per_page}
@@ -1154,6 +710,9 @@ class Gitlab(object):
         Return a list of issues for project id.
 
         :param: project_id: The id for the project.
+        :param page: Page number
+        :param per_page: Records per page
+        :param kwargs: Extra data to send
         :return: list of issues
         """
         kwargs['page'] = page
@@ -1231,6 +790,8 @@ class Gitlab(object):
         Get the milestones for a project
 
         :param project_id: project id
+        :param page: Page number
+        :param per_page: Records per page
         :return: the milestones
         """
         data = {'page': page, 'per_page': per_page}
@@ -1462,6 +1023,8 @@ class Gitlab(object):
         Retrieve group information
 
         :param group_id: Specify a group. Otherwise, all groups are returned
+        :param page: Page Number
+        :param per_page: Records Per Page
         :return: list of groups
         """
         data = {'page': page, 'per_page': per_page}
@@ -1497,6 +1060,8 @@ class Gitlab(object):
         Get all the merge requests for a project.
 
         :param project_id: ID of the project to retrieve merge requests for
+        :param page: Page Number
+        :param per_page: Records per page
         :param state: Passes merge request state to filter them by it
         :return: list with all the merge requests
         """
@@ -1534,6 +1099,8 @@ class Gitlab(object):
 
         :param project_id: ID of the project
         :param mergerequest_id: ID of the merge request
+        :param page: Page number
+        :param per_page: Records per page
         :return: list of the comments
         """
         data = {'page': page, 'per_page': per_page}
@@ -1751,6 +1318,8 @@ class Gitlab(object):
         Gets all repositories for a project id
 
         :param project_id: project id
+        :param page: Page number
+        :param per_page: Records per page
         :return: list of repos
         """
         data = {'page': page, 'per_page': per_page}
@@ -1826,6 +1395,8 @@ class Gitlab(object):
         Get a list of repository tags from a project, sorted by name in reverse alphabetical order.
 
         :param project_id: project id
+        :param page: Page number
+        :param per_page: Records per page
         :return: list with all the tags
         """
         data = {'page': page, 'per_page': per_page}
@@ -1875,12 +1446,13 @@ class Gitlab(object):
         """
         Adds an inline comment to a specific commit
 
-        :param project_id project id
-        :param author The author info as returned by createmergerequest
-        :param sha The name of a repository branch or tag or if not given the default branch
-        :param path The file path
-        :param line The line number
-        :param note Text of comment
+        :param project_id: project id
+        :param author: The author info as returned by create mergerequest
+        :param sha: The name of a repository branch or tag or if not given the default branch
+        :param path: The file path
+        :param line: The line number
+        :param note: Text of comment
+        :return: True or False
         """
 
         data = {
@@ -1900,13 +1472,14 @@ class Gitlab(object):
         else:
             return False
 
-
     def getrepositorycommits(self, project_id, ref_name=None, page=1, per_page=20):
         """
         Get a list of repository commits in a project.
 
         :param project_id: The ID of a project
         :param ref_name: The name of a repository branch or tag or if not given the default branch
+        :param page: Page number
+        :param per_page: Records per page
         :return: list of commits
         """
         data = {'page': page, 'per_page': per_page}
@@ -2023,8 +1596,10 @@ class Gitlab(object):
         """
         Get repository contributors list
 
-        :param: project_id: The ID of a project
-        :return: list of contributors
+        :param project_id: The ID of a project
+        :param page: Page number
+        :param per_page: Records per page
+        :return: list of contributors or False
         """
         data = {'page': page, 'per_page': per_page}
 
@@ -2063,7 +1638,9 @@ class Gitlab(object):
         """
         Search for projects by name which are accessible to the authenticated user
 
-        :param search: query to search for
+        :param search: Query to search for
+        :param page: Page number
+        :param per_page: Records per page
         :return: list of results
         """
         data = {'page': page, 'per_page': per_page}
@@ -2075,7 +1652,7 @@ class Gitlab(object):
         else:
             return False
 
-    def getfilearchive(self, project_id, filepath=""):
+    def getfilearchive(self, project_id, filepath=None):
         """
         Get an archive of the repository
 
@@ -2083,6 +1660,9 @@ class Gitlab(object):
         :param filepath: path to save the file to
         :return: True if the file was saved to the filepath
         """
+        if not filepath:
+            filepath = ''
+
         request = requests.get(
             '{0}/{1}/repository/archive'.format(self.projects_url, project_id),
             verify=self.verify_ssl, auth=self.auth, headers=self.headers, timeout=self.timeout)
@@ -2230,10 +1810,10 @@ class Gitlab(object):
         """
         Deletes a LDAP group link (for a specific LDAP provider if given)
 
-        :param id: The ID of a group
+        :param group_id: The ID of a group
         :param cn: The CN of a LDAP group
         :param provider: Name of a LDAP provider
-        :return True if success
+        :return: True if success
         """
         url = '{base}/{gid}/ldap_group_links/{provider}{cn}'.format(
             base=self.groups_url, gid=group_id, cn=cn,
@@ -2246,6 +1826,11 @@ class Gitlab(object):
     def getissuewallnotes(self, project_id, issue_id, page=1, per_page=20):
         """
         Get the notes from the wall of a issue
+
+        :param project_id: Project ID
+        :param issue_id: Issue ID
+        :param page: Page Number
+        :param per_page: Records per page
         """
         data = {'page': page, 'per_page': per_page}
 
@@ -2261,6 +1846,11 @@ class Gitlab(object):
     def getissuewallnote(self, project_id, issue_id, note_id):
         """
         Get one note from the wall of the issue
+
+        :param project_id: Project ID
+        :param issue_id: Issue ID
+        :param note_id: Note ID
+        :return: Json or False
         """
         request = requests.get(
             '{0}/{1}/issues/{2}/notes/{3}'.format(self.projects_url, project_id, issue_id, note_id),
@@ -2274,6 +1864,10 @@ class Gitlab(object):
     def createissuewallnote(self, project_id, issue_id, content):
         """Create a new note
 
+        :param project_id: Project ID
+        :param issue_id:  Issue ID
+        :param content: Contents
+        :return: Json or False
         """
         data = {'body': content}
         request = requests.post(
@@ -2288,6 +1882,12 @@ class Gitlab(object):
     def getsnippetwallnotes(self, project_id, snippet_id, page=1, per_page=20):
         """
         Get the notes from the wall of a snippet
+
+        :param project_id: Project ID
+        :param snippet_id: Snippet ID
+        :param page: Page number
+        :param per_page: Records per page
+        :return: Json or False
         """
         data = {'page': page, 'per_page': per_page}
         request = requests.get(
@@ -2302,6 +1902,11 @@ class Gitlab(object):
     def getsnippetwallnote(self, project_id, snippet_id, note_id):
         """
         Get one note from the wall of the snippet
+
+        :param project_id: Project ID
+        :param snippet_id: Snippet ID
+        :param note_id: Note ID
+        :return: Json or False
         """
         request = requests.get(
             '{0}/{1}/snippets/{2}/notes/{3}'.format(self.projects_url, project_id, snippet_id, note_id),
@@ -2315,6 +1920,11 @@ class Gitlab(object):
     def createsnippetewallnote(self, project_id, snippet_id, content):
         """
         Create a new note
+
+        :param project_id: Project ID
+        :param snippet_id: Snippet ID
+        :param content: Content
+        :return: Json or False
         """
         data = {'body': content}
 
@@ -2330,6 +1940,12 @@ class Gitlab(object):
     def getmergerequestwallnotes(self, project_id, merge_request_id, page=1, per_page=20):
         """
         Get the notes from the wall of a merge request
+
+        :param project_id: Project ID
+        :param merge_request_id: Merger Request ID
+        :param page: Page number
+        :param per_page: Records per page
+        :return: Json or False
         """
         data = {'page': page, 'per_page': per_page}
 
@@ -2345,6 +1961,11 @@ class Gitlab(object):
     def getmergerequestwallnote(self, project_id, merge_request_id, note_id):
         """
         Get one note from the wall of the merge request
+
+        :param project_id: Project ID
+        :param merge_request_id: Merger Request ID
+        :param note_id: Note ID
+        :return: Json or False
         """
         request = requests.get(
             '{0}/{1}/merge_requests/{2}/notes/{3}'.format(self.projects_url, project_id, merge_request_id, note_id),
@@ -2358,6 +1979,11 @@ class Gitlab(object):
     def createmergerequestewallnote(self, project_id, merge_request_id, content):
         """
         Create a new note
+
+        :param project_id: Project ID
+        :param merge_request_id: Merger Request ID
+        :param content: Content
+        :return: Json or False
         """
         data = {'body': content}
 
@@ -2483,6 +2109,9 @@ class Gitlab(object):
         """
         Delete GitLab CI service settings
 
+        :param project_id: Project ID
+        :param token: Token
+        :param project_url: Project URL
         :return: true if success, false if not
         """
         request = requests.delete(
@@ -2584,30 +2213,3 @@ class Gitlab(object):
             return request.json()
         else:
             return False
-
-    @staticmethod
-    def getall(fn, *args, **kwargs):
-        """
-        Auto-iterate over the paginated results of various methods of the API.
-        Pass the GitLabAPI method as the first argument, followed by the
-        other parameters as normal. Include `page` to determine first page to poll.
-        Remaining kwargs are passed on to the called method, including `per_page`.
-
-        :param fn: Actual method to call
-        :param *args: Positional arguments to actual method
-        :param page: Optional, page number to start at, defaults to 1
-        :param **kwargs: Keyword arguments to actual method
-        :return: Yields each item in the result until exhausted, and then
-        implicit StopIteration; or no elements if error
-        """
-        page = kwargs.pop('page', 1)
-
-        while True:
-            results = fn(*args, page=page, **kwargs)
-
-            if not results:
-                break
-            for x in results:
-                yield x
-
-            page += 1

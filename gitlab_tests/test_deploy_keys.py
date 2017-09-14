@@ -1,7 +1,7 @@
 import responses
+from requests.exceptions import HTTPError
 
-from gitlab.exceptions import HttpError
-from gitlab_tests.base import BaseTest
+from gitlab_tests.base_test import BaseTest
 from response_data.deploy_keys import *
 
 
@@ -37,7 +37,9 @@ class TestGetAllDeployKeys(BaseTest):
             status=404,
             content_type='application/json')
 
-        self.assertRaises(HttpError, self.gitlab.get_all_deploy_keys)
+        self.gitlab.suppress_http_error = False
+        self.assertRaises(HTTPError, self.gitlab.get_all_deploy_keys)
+        self.gitlab.suppress_http_error = True
 
 
 class TestEnableDeployKeys(BaseTest):
@@ -61,4 +63,6 @@ class TestEnableDeployKeys(BaseTest):
             status=500,
             content_type='application/json')
 
-        self.assertRaises(HttpError, self.gitlab.enable_deploy_key, 5, 2)
+        self.gitlab.suppress_http_error = False
+        self.assertRaises(HTTPError, self.gitlab.enable_deploy_key, 5, 2)
+        self.gitlab.suppress_http_error = True

@@ -1,0 +1,18 @@
+version: "2"
+
+services:
+  sut:
+    build: ../../.
+    links:
+      - gitlab
+    depends_on:
+      - "gitlab"
+
+  gitlab:
+    image: gitlab/gitlab-ce
+    expose:
+      - "80"
+    environment:
+      GITLAB_OMNIBUS_CONFIG: gitlab_rails['initial_root_password'] = "5iveL!fe"
+    logging:
+      driver: none

@@ -1,25 +1,20 @@
-env:
-  - gitlab_user=root gitlab_password=5iveL!fe gitlab_host=http://localhost:8080
-services:
-  - redis-server
 language: python
+
 python:
   - "2.7"
-  - "3.2"
   - "3.3"
   - "3.4"
-rvm:
-  - 2.1.0
-# install local gitlab
-before_install:
-  - gem install bundler --no-ri --no-rdoc
-  - scripts/prepare_test_env.sh
-  - scripts/install_gitlab.sh
-# command to install dependencies
+  - "3.5"
+  - "3.5-dev"
+  - "3.6"
+  - "3.6-dev"
+  - "3.7-dev"
+  - "nightly"
+
 install:
-  - pip install -r test-requirements.txt
-  - pip install coveralls
-# command to run tests
-script: coverage run --source=gitlab setup.py test
+  - pip install codecov
+  - pip install -Ur test-requirements.txt
+
+script: bash cov ignore
 after_success:
-  coveralls
+  - codecov

@@ -121,18 +121,52 @@ And with positional args::
     print len(list(git.getall(git.getgroupmembers, 191, page=3, per_page=7)))
 
 
+API Deprecation
+==================
+
+We are currently working on moving to new method names but don't want to break any existing code bases. In order for
+us to do this we will be adding a deprecation warning to the old style methods. Please find below an example of how
+things will change.
+
+Code Example::
+
+    # The old style to get users
+    getusers('bob')
+
+    # the new style
+    get_users('bob')
+
+
 API doc
 ==================
 
-Every method now has the documentation as a docstring.
-The best way of checking what the API entails is to go to the Gitlab API page directly as this library is a 1:1 translation of it.
-http://doc.gitlab.com/ce/api/README.html
+We are working to get back to a 1:1 translation of the Gitlab API.
 
+Gitlab
+------------------
 
-.. automodule:: gitlab
-
-.. autoclass:: Gitlab
+.. autoclass:: gitlab.Gitlab
     :members:
+    :inherited-members:
+
+Base
+------------------
+
+.. autoclass:: gitlab.base.Base
+    :members:
+
+Session
+------------------
+
+.. autoclass:: gitlab.session.Session
+    :members:
+
+Keys
+------------------
+
+.. autoclass:: gitlab.keys.Keys
+    :members:
+
 
 Indices and tables
 ==================
